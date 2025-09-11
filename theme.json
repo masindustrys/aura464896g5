@@ -1,0 +1,74 @@
+{
+  "name": "Arura",
+  "version": "1.0.0",
+  "description": "An elegant and advanced Salla theme with modern features",
+  "author": {
+    "name": "Arura Theme",
+    "email": "contact@arura.theme"
+  },
+  "preview": "preview.png",
+  "support_url": "",
+  "demo_url": "",
+  "tags": ["elegant", "modern", "responsive", "advanced"],
+  "customizer": {
+    "settings": [
+      {
+        "key": "primary_color",
+        "type": "color",
+        "label": "Primary Color",
+        "default": "#1a202c"
+      },
+      {
+        "key": "secondary_color", 
+        "type": "color",
+        "label": "Secondary Color",
+        "default": "#2d3748"
+      },
+      {
+        "key": "accent_color",
+        "type": "color",
+        "label": "Accent Color", 
+        "default": "#3182ce"
+      },
+      {
+        "key": "logo",
+        "type": "image",
+        "label": "Logo",
+        "default": ""
+      },
+      {
+        "key": "header_style",
+        "type": "select",
+        "label": "Header Style",
+        "options": [
+          {"value": "classic", "label": "Classic"},
+          {"value": "modern", "label": "Modern"},
+          {"value": "minimal", "label": "Minimal"}
+        ],
+        "default": "modern"
+      },
+      {
+        "key": "layout_width",
+        "type": "select", 
+        "label": "Layout Width",
+        "options": [
+          {"value": "boxed", "label": "Boxed"},
+          {"value": "full", "label": "Full Width"}
+        ],
+        "default": "full"
+      }
+    ]
+  },
+  "supports": [
+    "rtl",
+    "multi-currency",
+    "wishlist", 
+    "compare",
+    "quick-view",
+    "product-reviews",
+    "seo-optimization",
+    "social-sharing",
+    "newsletter",
+    "advanced-search"
+  ]
+}

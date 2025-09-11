@@ -1,0 +1,141 @@
+<div class="product-card">
+    <div class="product-card__image">
+        <a href="{{ product.url }}" class="product-card__link">
+            <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" class="product-card__img">
+            {% if product.images|length > 1 %}
+            <img src="{{ product.images[1] }}" alt="{{ product.name }}" loading="lazy" class="product-card__img product-card__img--hover">
+            {% endif %}
+        </a>
+        
+        <!-- Product Badges -->
+        <div class="product-card__badges">
+            {% if product.is_new %}
+            <span class="product-badge product-badge--new">{{ 'New'|t }}</span>
+            {% endif %}
+            
+            {% if product.is_on_sale %}
+            <span class="product-badge product-badge--sale">
+                {% if product.discount_percentage %}
+                -{{ product.discount_percentage }}%
+                {% else %}
+                {{ 'Sale'|t }}
+                {% endif %}
+            </span>
+            {% endif %}
+            
+            {% if product.is_out_of_stock %}
+            <span class="product-badge product-badge--out-of-stock">{{ 'Out of Stock'|t }}</span>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="product-card__actions">
+            <button class="product-action quick-view-btn" data-product-id="{{ product.id }}" title="{{ 'Quick View'|t }}">
+                <i class="icon-eye"></i>
+            </button>
+            
+            <button class="product-action wishlist-btn {% if product.is_in_wishlist %}active{% endif %}" 
+                    data-product-id="{{ product.id }}" 
+                    title="{{ product.is_in_wishlist ? 'Remove from Wishlist'|t : 'Add to Wishlist'|t }}">
+                <i class="icon-heart"></i>
+            </button>
+            
+            <button class="product-action compare-btn {% if product.is_in_compare %}active{% endif %}" 
+                    data-product-id="{{ product.id }}" 
+                    title="{{ product.is_in_compare ? 'Remove from Compare'|t : 'Add to Compare'|t }}">
+                <i class="icon-compare"></i>
+            </button>
+        </div>
+        
+        <!-- Quick Add to Cart (for simple products) -->
+        {% if product.type == 'simple' and not product.is_out_of_stock %}
+        <div class="product-card__quick-add">
+            <button class="btn btn--primary btn--sm add-to-cart-btn" data-product-id="{{ product.id }}">
+                <i class="icon-cart"></i>
+                {{ 'Add to Cart'|t }}
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="product-card__content">
+        <!-- Product Category -->
+        {% if product.category %}
+        <div class="product-card__category">
+            <a href="{{ product.category.url }}">{{ product.category.name }}</a>
+        </div>
+        {% endif %}
+        
+        <!-- Product Name -->
+        <h3 class="product-card__title">
+            <a href="{{ product.url }}">{{ product.name }}</a>
+        </h3>
+        
+        <!-- Product Rating -->
+        {% if product.reviews_count > 0 %}
+        <div class="product-card__rating">
+            <div class="rating">
+                <div class="rating__stars">
+                    {% for i in 1..5 %}
+                    <i class="icon-star {% if i <= product.rating %}filled{% endif %}"></i>
+                    {% endfor %}
+                </div>
+                <span class="rating__count">({{ product.reviews_count }})</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Product Price -->
+        <div class="product-card__price">
+            {% if product.is_on_sale %}
+            <span class="price price--sale">{{ product.sale_price }}</span>
+            <span class="price price--regular">{{ product.regular_price }}</span>
+            {% else %}
+            <span class="price">{{ product.price }}</span>
+            {% endif %}
+        </div>
+        
+        <!-- Product Variants (for variable products) -->
+        {% if product.type == 'variable' and product.variants %}
+        <div class="product-card__variants">
+            <!-- Color Variants -->
+            {% if product.color_variants %}
+            <div class="variant-options variant-options--colors">
+                {% for color in product.color_variants|slice(0, 5) %}
+                <div class="color-option" style="background-color: {{ color.value }}" title="{{ color.name }}"></div>
+                {% endfor %}
+                {% if product.color_variants|length > 5 %}
+                <span class="variant-more">+{{ product.color_variants|length - 5 }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Size Variants -->
+            {% if product.size_variants %}
+            <div class="variant-options variant-options--sizes">
+                {% for size in product.size_variants|slice(0, 4) %}
+                <span class="size-option">{{ size.name }}</span>
+                {% endfor %}
+                {% if product.size_variants|length > 4 %}
+                <span class="variant-more">+{{ product.size_variants|length - 4 }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Product Features/Tags -->
+        {% if product.features %}
+        <div class="product-card__features">
+            {% for feature in product.features|slice(0, 2) %}
+            <span class="product-feature">{{ feature }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Loading State -->
+    <div class="product-card__loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+</div>

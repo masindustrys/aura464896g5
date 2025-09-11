@@ -1,0 +1,105 @@
+{
+  "name": "arura-theme",
+  "version": "1.0.0",
+  "description": "An elegant and advanced Salla theme with modern features",
+  "main": "assets/js/main.js",
+  "scripts": {
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "postcss assets/css/main.css -o dist/css/main.min.css --map",
+    "build:js": "terser assets/js/main.js -o dist/js/main.min.js --source-map",
+    "watch": "npm run watch:css & npm run watch:js",
+    "watch:css": "postcss assets/css/main.css -o dist/css/main.min.css --map --watch",
+    "watch:js": "terser assets/js/main.js -o dist/js/main.min.js --source-map --watch",
+    "dev": "npm run watch",
+    "lint": "eslint assets/js/**/*.js",
+    "lint:fix": "eslint assets/js/**/*.js --fix",
+    "format": "prettier --write assets/**/*.{css,js}",
+    "validate": "npm run lint && npm run build",
+    "clean": "rm -rf dist/",
+    "optimize-images": "imagemin assets/images/* --out-dir=dist/images"
+  },
+  "keywords": [
+    "salla",
+    "theme",
+    "ecommerce",
+    "responsive",
+    "modern",
+    "elegant",
+    "arura"
+  ],
+  "author": {
+    "name": "Arura Theme",
+    "email": "contact@arura.theme",
+    "url": "https://arura.theme"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/masindustrys/aura.git"
+  },
+  "bugs": {
+    "url": "https://github.com/masindustrys/aura/issues"
+  },
+  "homepage": "https://github.com/masindustrys/aura#readme",
+  "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "autoprefixer": "^10.4.14",
+    "cssnano": "^6.0.1",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "imagemin": "^8.0.1",
+    "imagemin-cli": "^7.0.0",
+    "imagemin-jpeg-recompress": "^7.0.0",
+    "imagemin-pngquant": "^9.0.2",
+    "postcss": "^8.4.24",
+    "postcss-cli": "^10.1.0",
+    "postcss-import": "^15.1.0",
+    "prettier": "^2.8.8",
+    "terser": "^5.18.2"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es6": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "prettier"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "error",
+      "prefer-const": "error",
+      "no-var": "error"
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "postcss": {
+    "plugins": {
+      "postcss-import": {},
+      "autoprefixer": {},
+      "cssnano": {
+        "preset": "default"
+      }
+    }
+  }
+}

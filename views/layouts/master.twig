@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="{{ store.locale }}" dir="{{ store.direction }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page.title }} - {{ store.name }}{% endblock %}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block description %}{{ page.description|default(store.description) }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ page.keywords|default(store.keywords) }}{% endblock %}">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}{{ page.title }} - {{ store.name }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ page.description|default(store.description) }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ store.logo }}{% endblock %}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ page.title }} - {{ store.name }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ page.description|default(store.description) }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ store.logo }}{% endblock %}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ canonical_url }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ store.favicon }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+    {% if store.direction == 'rtl' %}
+    <link rel="stylesheet" href="{{ asset('css/rtl.css') }}">
+    {% endif %}
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: {{ theme.primary_color|default('#1a202c') }};
+            --secondary-color: {{ theme.secondary_color|default('#2d3748') }};
+            --accent-color: {{ theme.accent_color|default('#3182ce') }};
+        }
+    </style>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Header -->
+    {% include 'partials/header.twig' %}
+    
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    {% include 'partials/footer.twig' %}
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        {% include 'partials/search-form.twig' %}
+    </div>
+    
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        {% include 'partials/cart-sidebar.twig' %}
+    </div>
+    
+    <!-- Quick View Modal -->
+    <div class="modal" id="quickViewModal">
+        <div class="modal-content">
+            <div class="modal-body" id="quickViewContent"></div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- JavaScript Files -->
+    <script src="{{ asset('js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+    
+    <!-- Analytics and Tracking -->
+    {{ store.analytics_code|raw }}
+</body>
+</html>
