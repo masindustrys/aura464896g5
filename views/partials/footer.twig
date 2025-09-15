@@ -1,0 +1,176 @@
+<footer class="footer">
+    <!-- Newsletter Section -->
+    <div class="newsletter-section">
+        <div class="container">
+            <div class="newsletter">
+                <div class="newsletter__content">
+                    <h3 class="newsletter__title">{{ 'Subscribe to Our Newsletter'|t }}</h3>
+                    <p class="newsletter__description">{{ 'Get the latest updates on new products and upcoming sales'|t }}</p>
+                </div>
+                <form class="newsletter__form" action="{{ url('newsletter/subscribe') }}" method="post">
+                    <div class="newsletter__input-group">
+                        <input type="email" name="email" placeholder="{{ 'Enter your email address'|t }}" required class="newsletter__input">
+                        <button type="submit" class="newsletter__button">{{ 'Subscribe'|t }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Footer -->
+    <div class="footer__main">
+        <div class="container">
+            <div class="footer__content">
+                <!-- Company Info -->
+                <div class="footer__column footer__column--info">
+                    <div class="footer__logo">
+                        {% if theme.logo %}
+                        <img src="{{ theme.logo }}" alt="{{ store.name }}" class="footer__logo-image">
+                        {% else %}
+                        <span class="footer__logo-text">{{ store.name }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="footer__description">{{ store.description }}</p>
+                    
+                    <!-- Contact Info -->
+                    <div class="footer__contact">
+                        {% if store.address %}
+                        <div class="footer__contact-item">
+                            <i class="icon-location"></i>
+                            <span>{{ store.address }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if store.phone %}
+                        <div class="footer__contact-item">
+                            <i class="icon-phone"></i>
+                            <a href="tel:{{ store.phone }}">{{ store.phone }}</a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if store.email %}
+                        <div class="footer__contact-item">
+                            <i class="icon-email"></i>
+                            <a href="mailto:{{ store.email }}">{{ store.email }}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Social Links -->
+                    {% if store.social_links %}
+                    <div class="footer__social">
+                        <h4 class="footer__social-title">{{ 'Follow Us'|t }}</h4>
+                        <div class="social-links">
+                            {% for social in store.social_links %}
+                            <a href="{{ social.url }}" target="_blank" rel="noopener" class="social-links__item">
+                                <i class="icon-{{ social.platform }}"></i>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="footer__column">
+                    <h4 class="footer__title">{{ 'Quick Links'|t }}</h4>
+                    <ul class="footer__links">
+                        <li><a href="{{ url('home') }}">{{ 'Home'|t }}</a></li>
+                        <li><a href="{{ url('about') }}">{{ 'About Us'|t }}</a></li>
+                        <li><a href="{{ url('contact') }}">{{ 'Contact Us'|t }}</a></li>
+                        <li><a href="{{ url('blog') }}">{{ 'Blog'|t }}</a></li>
+                        <li><a href="{{ url('faq') }}">{{ 'FAQ'|t }}</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="footer__column">
+                    <h4 class="footer__title">{{ 'Customer Service'|t }}</h4>
+                    <ul class="footer__links">
+                        <li><a href="{{ url('account') }}">{{ 'My Account'|t }}</a></li>
+                        <li><a href="{{ url('orders') }}">{{ 'Order History'|t }}</a></li>
+                        <li><a href="{{ url('wishlist') }}">{{ 'Wishlist'|t }}</a></li>
+                        <li><a href="{{ url('returns') }}">{{ 'Returns'|t }}</a></li>
+                        <li><a href="{{ url('support') }}">{{ 'Support'|t }}</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Categories -->
+                <div class="footer__column">
+                    <h4 class="footer__title">{{ 'Categories'|t }}</h4>
+                    <ul class="footer__links">
+                        {% for category in store.main_categories|slice(0, 6) %}
+                        <li><a href="{{ category.url }}">{{ category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <!-- Information -->
+                <div class="footer__column">
+                    <h4 class="footer__title">{{ 'Information'|t }}</h4>
+                    <ul class="footer__links">
+                        <li><a href="{{ url('privacy-policy') }}">{{ 'Privacy Policy'|t }}</a></li>
+                        <li><a href="{{ url('terms-of-service') }}">{{ 'Terms of Service'|t }}</a></li>
+                        <li><a href="{{ url('shipping-info') }}">{{ 'Shipping Info'|t }}</a></li>
+                        <li><a href="{{ url('payment-methods') }}">{{ 'Payment Methods'|t }}</a></li>
+                        <li><a href="{{ url('size-guide') }}">{{ 'Size Guide'|t }}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Methods -->
+    {% if store.payment_methods %}
+    <div class="footer__payments">
+        <div class="container">
+            <div class="payment-methods">
+                <h4 class="payment-methods__title">{{ 'We Accept'|t }}</h4>
+                <div class="payment-methods__list">
+                    {% for payment in store.payment_methods %}
+                    <div class="payment-methods__item">
+                        <img src="{{ payment.logo }}" alt="{{ payment.name }}" class="payment-methods__logo">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Footer Bottom -->
+    <div class="footer__bottom">
+        <div class="container">
+            <div class="footer__bottom-content">
+                <div class="footer__copyright">
+                    <p>&copy; {{ 'now'|date('Y') }} {{ store.name }}. {{ 'All rights reserved.'|t }}</p>
+                </div>
+                
+                <div class="footer__certifications">
+                    <!-- SSL Certificate -->
+                    <div class="certification-badge">
+                        <i class="icon-shield-check"></i>
+                        <span>{{ 'SSL Secured'|t }}</span>
+                    </div>
+                    
+                    <!-- Money Back Guarantee -->
+                    <div class="certification-badge">
+                        <i class="icon-money-back"></i>
+                        <span>{{ '30 Days Money Back'|t }}</span>
+                    </div>
+                    
+                    <!-- Fast Shipping -->
+                    <div class="certification-badge">
+                        <i class="icon-shipping-fast"></i>
+                        <span>{{ 'Fast Shipping'|t }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="icon-chevron-up"></i>
+    </button>
+</footer>
