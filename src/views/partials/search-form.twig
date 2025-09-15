@@ -1,0 +1,79 @@
+<div class="search-overlay__content">
+    <div class="container">
+        <div class="search-overlay__header">
+            <h2 class="search-overlay__title">{{ 'Search'|t }}</h2>
+            <button class="search-overlay__close" id="searchOverlayClose">
+                <i class="icon-close"></i>
+            </button>
+        </div>
+        
+        <form class="search-overlay__form" action="{{ url('search') }}" method="get">
+            <div class="search-input-group search-input-group--large">
+                <input type="text" 
+                       name="q" 
+                       placeholder="{{ 'Search for products...'|t }}" 
+                       class="search-input search-input--large" 
+                       value="{{ request.q }}"
+                       autofocus>
+                <button type="submit" class="search-button search-button--large">
+                    <i class="icon-search"></i>
+                </button>
+            </div>
+        </form>
+        
+        <!-- Search Suggestions -->
+        <div class="search-suggestions" id="searchSuggestions">
+            <!-- Popular Searches -->
+            <div class="search-section">
+                <h3 class="search-section__title">{{ 'Popular Searches'|t }}</h3>
+                <div class="search-tags">
+                    {% for tag in store.popular_search_terms|slice(0, 8) %}
+                    <a href="{{ url('search', {q: tag}) }}" class="search-tag">{{ tag }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Recent Searches -->
+            {% if user.recent_searches %}
+            <div class="search-section">
+                <h3 class="search-section__title">{{ 'Recent Searches'|t }}</h3>
+                <div class="search-history">
+                    {% for search in user.recent_searches|slice(0, 5) %}
+                    <a href="{{ url('search', {q: search.query}) }}" class="search-history__item">
+                        <i class="icon-clock"></i>
+                        <span>{{ search.query }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Quick Categories -->
+            <div class="search-section">
+                <h3 class="search-section__title">{{ 'Browse Categories'|t }}</h3>
+                <div class="search-categories">
+                    {% for category in store.main_categories|slice(0, 6) %}
+                    <a href="{{ category.url }}" class="search-category">
+                        {% if category.icon %}
+                        <i class="{{ category.icon }}"></i>
+                        {% endif %}
+                        <span>{{ category.name }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Results Preview (AJAX) -->
+        <div class="search-results-preview" id="searchResultsPreview" style="display: none;">
+            <div class="search-results-loading">
+                <div class="spinner"></div>
+                <span>{{ 'Searching...'|t }}</span>
+            </div>
+            
+            <div class="search-results-content" id="searchResultsContent">
+                <!-- Results will be populated via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>

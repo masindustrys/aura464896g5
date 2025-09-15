@@ -1,0 +1,304 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ store.name }} - {{ 'Home'|t }}{% endblock %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero__slider">
+        {% if store.featured_banners %}
+        {% for banner in store.featured_banners %}
+        <div class="hero__slide {% if loop.first %}active{% endif %}">
+            <div class="hero__image">
+                <img src="{{ banner.image }}" alt="{{ banner.title }}" loading="lazy">
+            </div>
+            <div class="hero__content">
+                <div class="container">
+                    <div class="hero__text">
+                        <h1 class="hero__title">{{ banner.title }}</h1>
+                        <p class="hero__description">{{ banner.description }}</p>
+                        {% if banner.button_text and banner.button_url %}
+                        <a href="{{ banner.button_url }}" class="btn btn--primary hero__cta">{{ banner.button_text }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <!-- Default Hero Content -->
+        <div class="hero__slide active">
+            <div class="hero__image">
+                <img src="{{ asset('images/hero-default.jpg') }}" alt="Welcome to {{ store.name }}" loading="lazy">
+            </div>
+            <div class="hero__content">
+                <div class="container">
+                    <div class="hero__text">
+                        <h1 class="hero__title">{{ 'Welcome to'|t }} {{ store.name }}</h1>
+                        <p class="hero__description">{{ 'Discover amazing products at great prices'|t }}</p>
+                        <a href="{{ url('products') }}" class="btn btn--primary hero__cta">{{ 'Shop Now'|t }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Hero Navigation -->
+    {% if store.featured_banners|length > 1 %}
+    <div class="hero__navigation">
+        <button class="hero__nav-btn hero__nav-btn--prev" id="heroPrev">
+            <i class="icon-chevron-left"></i>
+        </button>
+        <button class="hero__nav-btn hero__nav-btn--next" id="heroNext">
+            <i class="icon-chevron-right"></i>
+        </button>
+    </div>
+    
+    <div class="hero__indicators">
+        {% for banner in store.featured_banners %}
+        <button class="hero__indicator {% if loop.first %}active{% endif %}" data-slide="{{ loop.index0 }}"></button>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="features__grid">
+            <div class="feature">
+                <div class="feature__icon">
+                    <i class="icon-shipping-fast"></i>
+                </div>
+                <div class="feature__content">
+                    <h3 class="feature__title">{{ 'Free Shipping'|t }}</h3>
+                    <p class="feature__description">{{ 'Free shipping on orders over $50'|t }}</p>
+                </div>
+            </div>
+            
+            <div class="feature">
+                <div class="feature__icon">
+                    <i class="icon-money-back"></i>
+                </div>
+                <div class="feature__content">
+                    <h3 class="feature__title">{{ 'Money Back Guarantee'|t }}</h3>
+                    <p class="feature__description">{{ '30 days money back guarantee'|t }}</p>
+                </div>
+            </div>
+            
+            <div class="feature">
+                <div class="feature__icon">
+                    <i class="icon-support"></i>
+                </div>
+                <div class="feature__content">
+                    <h3 class="feature__title">{{ '24/7 Support'|t }}</h3>
+                    <p class="feature__description">{{ 'Customer support available 24/7'|t }}</p>
+                </div>
+            </div>
+            
+            <div class="feature">
+                <div class="feature__icon">
+                    <i class="icon-shield-check"></i>
+                </div>
+                <div class="feature__content">
+                    <h3 class="feature__title">{{ 'Secure Payment'|t }}</h3>
+                    <p class="feature__description">{{ 'Secure SSL encrypted payment'|t }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Categories -->
+{% if store.featured_categories %}
+<section class="featured-categories">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{{ 'Shop by Category'|t }}</h2>
+            <p class="section-description">{{ 'Explore our top categories'|t }}</p>
+        </div>
+        
+        <div class="categories-grid">
+            {% for category in store.featured_categories %}
+            <div class="category-card">
+                <a href="{{ category.url }}" class="category-card__link">
+                    <div class="category-card__image">
+                        <img src="{{ category.image }}" alt="{{ category.name }}" loading="lazy">
+                    </div>
+                    <div class="category-card__content">
+                        <h3 class="category-card__title">{{ category.name }}</h3>
+                        <span class="category-card__count">{{ category.products_count }} {{ 'products'|t }}</span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if store.featured_products %}
+<section class="featured-products">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{{ 'Featured Products'|t }}</h2>
+            <p class="section-description">{{ 'Check out our latest featured products'|t }}</p>
+        </div>
+        
+        <div class="products-grid">
+            {% for product in store.featured_products %}
+            {% include 'partials/product-card.twig' with {product: product} %}
+            {% endfor %}
+        </div>
+        
+        <div class="section-footer">
+            <a href="{{ url('products') }}" class="btn btn--outline">{{ 'View All Products'|t }}</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Best Sellers -->
+{% if store.best_selling_products %}
+<section class="best-sellers">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{{ 'Best Sellers'|t }}</h2>
+            <p class="section-description">{{ 'Our most popular products'|t }}</p>
+        </div>
+        
+        <div class="products-slider" id="bestSellersSlider">
+            {% for product in store.best_selling_products %}
+            <div class="product-slide">
+                {% include 'partials/product-card.twig' with {product: product} %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Special Offers -->
+{% if store.special_offers %}
+<section class="special-offers">
+    <div class="container">
+        <div class="offers-grid">
+            {% for offer in store.special_offers %}
+            <div class="offer-card offer-card--{{ offer.type }}">
+                <div class="offer-card__image">
+                    <img src="{{ offer.image }}" alt="{{ offer.title }}" loading="lazy">
+                </div>
+                <div class="offer-card__content">
+                    <h3 class="offer-card__title">{{ offer.title }}</h3>
+                    <p class="offer-card__description">{{ offer.description }}</p>
+                    {% if offer.discount %}
+                    <div class="offer-card__discount">{{ offer.discount }}% {{ 'OFF'|t }}</div>
+                    {% endif %}
+                    <a href="{{ offer.url }}" class="btn btn--primary offer-card__btn">{{ 'Shop Now'|t }}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Newsletter Section -->
+<section class="home-newsletter">
+    <div class="container">
+        <div class="newsletter-banner">
+            <div class="newsletter-banner__content">
+                <h2 class="newsletter-banner__title">{{ 'Stay Updated'|t }}</h2>
+                <p class="newsletter-banner__description">{{ 'Subscribe to our newsletter and get 10% off your first order'|t }}</p>
+            </div>
+            <form class="newsletter-banner__form" action="{{ url('newsletter/subscribe') }}" method="post">
+                <div class="newsletter-input-group">
+                    <input type="email" name="email" placeholder="{{ 'Enter your email address'|t }}" required>
+                    <button type="submit" class="btn btn--primary">{{ 'Subscribe'|t }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Brand Logos -->
+{% if store.brands %}
+<section class="brands">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{{ 'Our Brands'|t }}</h2>
+        </div>
+        
+        <div class="brands-slider" id="brandsSlider">
+            {% for brand in store.brands %}
+            <div class="brand-slide">
+                <a href="{{ brand.url }}" class="brand-logo">
+                    <img src="{{ brand.logo }}" alt="{{ brand.name }}" loading="lazy">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hero slider functionality
+    const heroSlider = document.querySelector('.hero__slider');
+    const heroSlides = document.querySelectorAll('.hero__slide');
+    const heroIndicators = document.querySelectorAll('.hero__indicator');
+    const heroNext = document.getElementById('heroNext');
+    const heroPrev = document.getElementById('heroPrev');
+    let currentSlide = 0;
+    
+    if (heroSlides.length > 1) {
+        function showSlide(index) {
+            heroSlides[currentSlide].classList.remove('active');
+            heroIndicators[currentSlide].classList.remove('active');
+            
+            currentSlide = (index + heroSlides.length) % heroSlides.length;
+            
+            heroSlides[currentSlide].classList.add('active');
+            heroIndicators[currentSlide].classList.add('active');
+        }
+        
+        if (heroNext) {
+            heroNext.addEventListener('click', () => showSlide(currentSlide + 1));
+        }
+        
+        if (heroPrev) {
+            heroPrev.addEventListener('click', () => showSlide(currentSlide - 1));
+        }
+        
+        heroIndicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => showSlide(index));
+        });
+        
+        // Auto-play hero slider
+        setInterval(() => {
+            showSlide(currentSlide + 1);
+        }, 5000);
+    }
+    
+    // Initialize product sliders
+    initProductSlider('bestSellersSlider');
+    initProductSlider('brandsSlider');
+});
+
+function initProductSlider(sliderId) {
+    const slider = document.getElementById(sliderId);
+    if (!slider) return;
+    
+    // Add slider navigation and functionality here
+    // This would typically integrate with a slider library like Swiper.js
+}
+</script>
+{% endblock %}
