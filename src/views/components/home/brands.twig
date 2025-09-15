@@ -1,0 +1,198 @@
+{#
+Brands Component
+Display brand logos in a responsive grid
+#}
+
+{% if component.brands and component.brands|length > 0 %}
+<section class="brands-section py-16 bg-secondary-50" data-animation="slide-up">
+    <div class="container mx-auto px-4">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+            {% if component.title %}
+            <h2 class="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
+                {{ component.title }}
+            </h2>
+            {% endif %}
+            
+            {% if component.description %}
+            <p class="text-lg text-secondary-600 max-w-2xl mx-auto">
+                {{ component.description }}
+            </p>
+            {% endif %}
+        </div>
+        
+        <!-- Brands Grid -->
+        <div class="brands-grid grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-6" data-animation="stagger">
+            {% for brand in component.brands %}
+            <a href="{{ brand.url }}" 
+               class="brand-item group bg-white rounded-lg border border-secondary-200 p-6 text-center 
+                      hover:border-primary-300 hover:shadow-medium transition-all duration-300 
+                      hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+               title="{{ brand.name }}">
+                
+                <!-- Brand Logo -->
+                {% if brand.logo %}
+                <img src="{{ brand.logo }}" 
+                     alt="{{ brand.name }}"
+                     class="brand-logo w-full h-16 object-contain filter grayscale group-hover:grayscale-0 
+                            transition-all duration-300 group-hover:scale-110"
+                     loading="lazy">
+                {% else %}
+                <!-- Fallback for brands without logo -->
+                <div class="w-full h-16 flex items-center justify-center bg-secondary-100 text-secondary-500 
+                            rounded-md group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
+                    <i class="sicon-award-ribbon text-2xl"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Brand Name (Optional) -->
+                {% if component.show_names|default(false) %}
+                <h3 class="mt-3 text-sm font-medium text-secondary-800 group-hover:text-primary-700 
+                           transition-colors duration-200 line-clamp-1">
+                    {{ brand.name }}
+                </h3>
+                {% endif %}
+                
+                <!-- Product Count (Optional) -->
+                {% if component.show_counts and brand.products_count %}
+                <p class="text-xs text-secondary-500 mt-1">
+                    {{ brand.products_count }} {{ trans('common.products') }}
+                </p>
+                {% endif %}
+                
+                <!-- Hover Effect Indicator -->
+                <div class="absolute -top-1 -right-1 w-6 h-6 bg-primary-600 text-white rounded-full 
+                            flex items-center justify-center text-xs font-bold opacity-0 
+                            group-hover:opacity-100 transition-opacity duration-300 
+                            transform scale-75 group-hover:scale-100">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }}"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+        <!-- View All Brands Button -->
+        {% if component.view_all_url %}
+        <div class="text-center mt-12">
+            <a href="{{ component.view_all_url }}" 
+               class="btn btn-outline inline-flex items-center space-x-2 group">
+                <span>{{ trans('brands.all_brands') }}</span>
+                <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }} group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Brand Slider for Mobile (Optional) -->
+        {% if component.brands|length > 6 %}
+        <div class="lg:hidden mt-8">
+            <div class="flex justify-center space-x-2">
+                <button class="brands-slider-prev w-10 h-10 bg-white border border-secondary-200 
+                               hover:bg-primary-600 hover:border-primary-600 hover:text-white 
+                               text-secondary-600 rounded-full flex items-center justify-center 
+                               transition-all duration-200 disabled:opacity-50"
+                        aria-label="{{ trans('common.previous') }}">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'right' : 'left' }}"></i>
+                </button>
+                <button class="brands-slider-next w-10 h-10 bg-white border border-secondary-200 
+                               hover:bg-primary-600 hover:border-primary-600 hover:text-white 
+                               text-secondary-600 rounded-full flex items-center justify-center 
+                               transition-all duration-200 disabled:opacity-50"
+                        aria-label="{{ trans('common.next') }}">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }}"></i>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Trust Indicators (Optional) -->
+{% if component.show_trust_indicators|default(true) %}
+<div class="bg-white border-t border-secondary-200 py-8">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-wrap items-center justify-center space-x-8 text-center text-sm text-secondary-500">
+            <div class="flex items-center space-x-2">
+                <i class="sicon-shield-check text-green-500"></i>
+                <span>{{ trans('common.secure_payment') }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <i class="sicon-truck text-blue-500"></i>
+                <span>{{ trans('common.fast_delivery') }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <i class="sicon-refresh text-purple-500"></i>
+                <span>{{ trans('common.money_back') }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <i class="sicon-headset text-orange-500"></i>
+                <span>{{ trans('common.customer_support') }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Schema Markup for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "{{ component.title|default('Our Brands') }}",
+    "description": "{{ component.description|default('Trusted brands available in our store') }}",
+    "numberOfItems": {{ component.brands|length }},
+    "itemListElement": [
+        {% for brand in component.brands %}
+        {
+            "@type": "ListItem",
+            "position": {{ loop.index }},
+            "item": {
+                "@type": "Brand",
+                "name": "{{ brand.name }}",
+                "url": "{{ brand.url }}",
+                "logo": "{{ brand.logo }}",
+                "description": "{{ brand.description|default(brand.name ~ ' products') }}"
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+
+<!-- Additional CSS for Brands Component -->
+<style>
+.brands-grid .brand-item {
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.brands-grid .brand-item:hover {
+    box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+    .brands-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .brand-item {
+        padding: 1rem;
+        min-height: 100px;
+    }
+}
+
+/* Animation for brand logos */
+@keyframes brandFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.brand-item:hover .brand-logo {
+    animation: brandFloat 1s ease-in-out infinite;
+}
+</style>
+{% endif %}

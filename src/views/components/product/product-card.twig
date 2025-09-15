@@ -1,0 +1,256 @@
+{#
+Modern Product Card Component
+Responsive product card with hover effects and interactive elements
+#}
+
+<div class="product-card bg-white rounded-xl overflow-hidden border border-secondary-200 group 
+            transition-all duration-300 hover:shadow-medium hover:-translate-y-1" 
+     data-product-id="{{ product.id }}">
+    
+    <!-- Product Image Container -->
+    <div class="product-image relative overflow-hidden bg-secondary-50">
+        <a href="{{ product.url }}" class="block">
+            <!-- Main Product Image -->
+            {% if product.image %}
+            <img src="{{ product.image }}" 
+                 alt="{{ product.name }}"
+                 class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                 loading="lazy">
+            {% else %}
+            <div class="w-full h-64 bg-secondary-200 flex items-center justify-center">
+                <i class="sicon-image text-4xl text-secondary-400"></i>
+            </div>
+            {% endif %}
+            
+            <!-- Secondary Image on Hover (if available) -->
+            {% if product.gallery and product.gallery|length > 1 %}
+            <img src="{{ product.gallery[1] }}" 
+                 alt="{{ product.name }}"
+                 class="absolute inset-0 w-full h-64 object-cover opacity-0 group-hover:opacity-100 
+                        transition-opacity duration-500"
+                 loading="lazy">
+            {% endif %}
+        </a>
+        
+        <!-- Product Badges -->
+        <div class="product-badges absolute top-3 left-3 flex flex-col space-y-2 z-10">
+            {% if product.on_sale %}
+            <span class="badge bg-accent-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ trans('product.sale') }}
+            </span>
+            {% endif %}
+            
+            {% if product.is_new %}
+            <span class="badge bg-green-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ trans('product.new') }}
+            </span>
+            {% endif %}
+            
+            {% if product.is_featured %}
+            <span class="badge bg-primary-600 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ trans('product.featured') }}
+            </span>
+            {% endif %}
+            
+            {% if not product.is_available %}
+            <span class="badge bg-secondary-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ trans('product.out_of_stock') }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- Product Actions -->
+        <div class="product-actions absolute top-3 right-3 flex flex-col space-y-2 z-10
+                    opacity-0 transform translate-x-4 transition-all duration-300 
+                    group-hover:opacity-100 group-hover:translate-x-0">
+            
+            <!-- Wishlist Button -->
+            <button class="action-btn wishlist-btn w-10 h-10 bg-white text-secondary-600 
+                           hover:text-accent-500 hover:bg-accent-50 rounded-full flex items-center 
+                           justify-center shadow-md transition-all duration-200 hover:scale-110 
+                           {{ product.in_wishlist ? 'active text-accent-500' : '' }}"
+                    data-product-id="{{ product.id }}"
+                    aria-label="{{ trans('product.add_to_wishlist') }}">
+                <i class="heart-icon sicon-heart{{ product.in_wishlist ? '-fill' : '' }}"></i>
+            </button>
+            
+            <!-- Quick View Button -->
+            <button class="action-btn quick-view-btn w-10 h-10 bg-white text-secondary-600 
+                           hover:text-primary-600 hover:bg-primary-50 rounded-full flex items-center 
+                           justify-center shadow-md transition-all duration-200 hover:scale-110"
+                    data-product-id="{{ product.id }}"
+                    aria-label="{{ trans('product.quick_view') }}">
+                <i class="sicon-eye"></i>
+            </button>
+            
+            <!-- Compare Button -->
+            <button class="action-btn compare-btn w-10 h-10 bg-white text-secondary-600 
+                           hover:text-blue-600 hover:bg-blue-50 rounded-full flex items-center 
+                           justify-center shadow-md transition-all duration-200 hover:scale-110 
+                           {{ product.in_compare ? 'active text-blue-600' : '' }}"
+                    data-product-id="{{ product.id }}"
+                    aria-label="{{ trans('product.add_to_compare') }}">
+                <i class="sicon-compare"></i>
+            </button>
+        </div>
+        
+        <!-- Discount Percentage (if on sale) -->
+        {% if product.on_sale and product.discount_percentage %}
+        <div class="absolute bottom-3 left-3 bg-accent-500 text-white text-sm font-bold 
+                    px-3 py-1 rounded-full">
+            -{{ product.discount_percentage }}%
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Product Content -->
+    <div class="product-content p-6">
+        <!-- Product Category -->
+        {% if product.category %}
+        <a href="{{ product.category.url }}" 
+           class="product-category text-sm text-secondary-500 hover:text-primary-600 
+                  transition-colors duration-200">
+            {{ product.category.name }}
+        </a>
+        {% endif %}
+        
+        <!-- Product Title -->
+        <h3 class="product-title font-semibold text-secondary-900 mb-3 leading-tight">
+            <a href="{{ product.url }}" 
+               class="hover:text-primary-600 transition-colors duration-200 line-clamp-2">
+                {{ product.name }}
+            </a>
+        </h3>
+        
+        <!-- Product Rating -->
+        {% if product.rating %}
+        <div class="product-rating flex items-center space-x-2 mb-3">
+            <div class="stars flex space-x-1">
+                {% for i in 1..5 %}
+                <i class="star sicon-star {{ i <= product.rating ? 'text-yellow-400' : 'text-secondary-300' }} text-sm"></i>
+                {% endfor %}
+            </div>
+            {% if product.reviews_count %}
+            <span class="rating-count text-sm text-secondary-500">
+                ({{ product.reviews_count }})
+            </span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Product Price -->
+        <div class="product-price flex items-center space-x-2 mb-4">
+            <span class="current-price text-lg font-bold text-secondary-900">
+                {{ product.price }}
+            </span>
+            
+            {% if product.compare_price %}
+            <span class="original-price text-sm text-secondary-500 line-through">
+                {{ product.compare_price }}
+            </span>
+            {% endif %}
+            
+            {% if product.on_sale and product.discount_percentage %}
+            <span class="discount text-sm text-accent-500 font-medium">
+                {{ trans('product.save') }} {{ product.discount_percentage }}%
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- Product Variants (if available) -->
+        {% if product.variants and product.variants|length > 1 %}
+        <div class="product-variants mb-4">
+            {% if product.color_variants %}
+            <div class="color-variants flex space-x-2">
+                {% for color in product.color_variants|slice(0, 4) %}
+                <div class="w-6 h-6 rounded-full border-2 border-secondary-200 cursor-pointer 
+                            hover:border-primary-600 transition-colors"
+                     style="background-color: {{ color.hex_code }}"
+                     title="{{ color.name }}">
+                </div>
+                {% endfor %}
+                {% if product.color_variants|length > 4 %}
+                <span class="text-xs text-secondary-500 flex items-center">
+                    +{{ product.color_variants|length - 4 }}
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Product Actions -->
+        <div class="product-actions flex space-x-2">
+            {% if product.is_available %}
+            <button class="add-to-cart btn btn-primary flex-1 py-2 text-sm font-medium 
+                           transition-all duration-200 hover:scale-105"
+                    data-product-id="{{ product.id }}"
+                    {% if product.has_variants %}data-has-variants="true"{% endif %}>
+                <i class="sicon-cart mr-2"></i>
+                {{ trans('product.add_to_cart') }}
+            </button>
+            {% else %}
+            <button class="btn btn-secondary flex-1 py-2 text-sm font-medium cursor-not-allowed" 
+                    disabled>
+                {{ trans('product.out_of_stock') }}
+            </button>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Add Options (for products with variants) -->
+        {% if product.has_variants and product.quick_add_options %}
+        <div class="quick-add-options mt-3 pt-3 border-t border-secondary-200 opacity-0 
+                    group-hover:opacity-100 transition-opacity duration-300">
+            <div class="flex items-center space-x-2 text-sm">
+                <span class="text-secondary-600">{{ trans('product.quick_add') }}:</span>
+                {% for option in product.quick_add_options|slice(0, 3) %}
+                <button class="px-2 py-1 border border-secondary-300 rounded text-xs 
+                               hover:border-primary-600 hover:text-primary-600 transition-colors"
+                        data-variant-id="{{ option.id }}">
+                    {{ option.name }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Loading State -->
+    <div class="loading-overlay absolute inset-0 bg-white/80 flex items-center justify-center 
+                opacity-0 transition-opacity duration-300" 
+         style="display: none;">
+        <div class="loading-spinner">
+            <div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Schema Markup for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ product.name }}",
+    "description": "{{ product.description|slice(0, 160) }}",
+    "image": "{{ product.image }}",
+    "url": "{{ product.url }}",
+    "brand": {
+        "@type": "Brand",
+        "name": "{{ product.brand.name|default(store.name) }}"
+    },
+    "offers": {
+        "@type": "Offer",
+        "price": "{{ product.price|number_format(2, '.', '') }}",
+        "priceCurrency": "{{ store.currency }}",
+        "availability": "{{ product.is_available ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+        "url": "{{ product.url }}"
+    }
+    {% if product.rating %},
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": {{ product.rating }},
+        "reviewCount": {{ product.reviews_count|default(1) }}
+    }
+    {% endif %}
+}
+</script>
