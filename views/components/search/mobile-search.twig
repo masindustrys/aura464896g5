@@ -1,0 +1,384 @@
+{#
+  Mobile Search Component
+  Optimized search interface for mobile devices
+#}
+
+<div class="mobile-search-container">
+    <form class="mobile-search-form" action="{{ store.url('product.search') }}" method="get">
+        <!-- Search Input -->
+        <div class="search-input-wrapper relative mb-4">
+            <div class="search-input-group flex items-center bg-white border-2 border-secondary-200 rounded-xl overflow-hidden focus-within:border-primary-500 transition-all duration-200">
+                <input type="text" 
+                       name="q" 
+                       class="search-input flex-1 py-3 px-4 text-base text-secondary-900 placeholder-secondary-500 border-none focus:outline-none"
+                       placeholder="{{ 'What are you looking for?'|t }}"
+                       value="{{ request.q }}"
+                       data-mobile-search-input>
+                
+                <button type="submit" 
+                        class="search-submit px-4 py-3 text-primary-600 hover:text-primary-700 transition-colors">
+                    <i class="sicon-search text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Quick Filters -->
+        <div class="quick-filters mb-4">
+            <div class="filter-tabs flex overflow-x-auto space-x-2 pb-2">
+                <button type="button" 
+                        class="filter-tab flex-shrink-0 px-4 py-2 text-sm font-medium rounded-full border transition-colors whitespace-nowrap active"
+                        data-filter="all">
+                    {{ 'All'|t }}
+                </button>
+                {% for category in store.main_categories|slice(0, 6) %}
+                <button type="button" 
+                        class="filter-tab flex-shrink-0 px-4 py-2 text-sm font-medium rounded-full border transition-colors whitespace-nowrap"
+                        data-filter="category"
+                        data-category="{{ category.id }}">
+                    {{ category.name }}
+                </button>
+                {% endfor %}
+                <button type="button" 
+                        class="filter-tab flex-shrink-0 px-4 py-2 text-sm font-medium rounded-full border transition-colors whitespace-nowrap"
+                        data-filter="sale">
+                    {{ 'On Sale'|t }}
+                </button>
+            </div>
+        </div>
+        
+        <!-- Hidden Filter Inputs -->
+        <input type="hidden" name="category" value="{{ request.category }}" data-category-input>
+        <input type="hidden" name="on_sale" value="{{ request.on_sale }}" data-sale-input>
+    </form>
+    
+    <!-- Search Results -->
+    <div class="mobile-search-results">
+        <!-- Loading State -->
+        <div class="search-loading hidden text-center py-8">
+            <div class="inline-flex flex-col items-center space-y-3">
+                <div class="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+                <span class="text-sm text-secondary-500">{{ 'Searching...'|t }}</span>
+            </div>
+        </div>
+        
+        <!-- Popular Searches -->
+        <div class="popular-searches" data-popular-searches>
+            <h4 class="text-sm font-semibold text-secondary-900 mb-3">{{ 'Popular Searches'|t }}</h4>
+            <div class="popular-items space-y-2">
+                {% for popular in store.popular_searches|slice(0, 8) %}
+                <button type="button" 
+                        class="popular-item w-full flex items-center justify-between p-3 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors text-left"
+                        data-search-term="{{ popular.term }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="sicon-trending-up text-primary-600"></i>
+                        <span class="text-sm text-secondary-800">{{ popular.term }}</span>
+                    </div>
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }} text-secondary-400 text-sm"></i>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Search Suggestions -->
+        <div class="search-suggestions hidden" data-search-suggestions>
+            <h4 class="text-sm font-semibold text-secondary-900 mb-3">{{ 'Suggestions'|t }}</h4>
+            <div class="suggestions-container space-y-2">
+                <!-- Suggestions will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Recent Searches -->
+        {% if user and user.recent_searches %}
+        <div class="recent-searches mt-6" data-recent-searches>
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-secondary-900">{{ 'Recent Searches'|t }}</h4>
+                <button type="button" 
+                        class="text-xs text-secondary-500 hover:text-red-500 transition-colors"
+                        data-clear-recent>
+                    {{ 'Clear all'|t }}
+                </button>
+            </div>
+            <div class="recent-items space-y-2">
+                {% for search in user.recent_searches|slice(0, 5) %}
+                <button type="button" 
+                        class="recent-item w-full flex items-center justify-between p-3 bg-white border border-secondary-200 rounded-lg hover:bg-secondary-50 transition-colors text-left"
+                        data-search-term="{{ search.term }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="sicon-clock text-secondary-500"></i>
+                        <span class="text-sm text-secondary-800">{{ search.term }}</span>
+                    </div>
+                    <button type="button" 
+                            class="remove-recent p-1 text-secondary-400 hover:text-red-500 transition-colors"
+                            data-remove-recent="{{ search.id }}">
+                        <i class="sicon-close text-xs"></i>
+                    </button>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- No Results -->
+        <div class="no-results hidden text-center py-8">
+            <div class="flex flex-col items-center space-y-3">
+                <i class="sicon-search text-4xl text-secondary-300"></i>
+                <h4 class="text-lg font-medium text-secondary-900">{{ 'No results found'|t }}</h4>
+                <p class="text-sm text-secondary-600 max-w-xs">
+                    {{ 'Try adjusting your search or browse our categories'|t }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions mt-6 pt-4 border-t border-secondary-200">
+        <div class="grid grid-cols-2 gap-3">
+            <a href="{{ store.url('categories.index') }}" 
+               class="flex items-center justify-center space-x-2 p-3 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors">
+                <i class="sicon-grid"></i>
+                <span class="text-sm font-medium">{{ 'Browse Categories'|t }}</span>
+            </a>
+            <a href="{{ store.url('brands.index') }}" 
+               class="flex items-center justify-center space-x-2 p-3 bg-secondary-50 text-secondary-700 rounded-lg hover:bg-secondary-100 transition-colors">
+                <i class="sicon-bookmark"></i>
+                <span class="text-sm font-medium">{{ 'View Brands'|t }}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.filter-tab {
+    @apply bg-white border-secondary-200 text-secondary-600;
+}
+
+.filter-tab.active {
+    @apply bg-primary-600 border-primary-600 text-white;
+}
+
+.filter-tab:not(.active):hover {
+    @apply bg-secondary-50 border-secondary-300;
+}
+
+.popular-item:hover .sicon-arrow-right {
+    @apply transform translate-x-1;
+}
+
+.popular-item:hover .sicon-arrow-left {
+    @apply transform -translate-x-1;
+}
+</style>
+
+<script>
+// Mobile Search Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileSearchInput = document.querySelector('[data-mobile-search-input]');
+    const popularSearches = document.querySelector('[data-popular-searches]');
+    const searchSuggestions = document.querySelector('[data-search-suggestions]');
+    const searchLoading = document.querySelector('.search-loading');
+    const noResults = document.querySelector('.no-results');
+    const categoryInput = document.querySelector('[data-category-input]');
+    const saleInput = document.querySelector('[data-sale-input]');
+    
+    let searchTimeout;
+    let currentQuery = '';
+    let activeFilter = 'all';
+    
+    // Search input handler
+    if (mobileSearchInput) {
+        mobileSearchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            currentQuery = query;
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length >= 2) {
+                showLoading();
+                searchTimeout = setTimeout(() => {
+                    performMobileSearch(query);
+                }, 400);
+            } else {
+                showDefaultState();
+            }
+        });
+    }
+    
+    // Filter tab handlers
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update filter state
+            const filterType = this.dataset.filter;
+            activeFilter = filterType;
+            
+            // Update hidden inputs
+            if (filterType === 'category') {
+                categoryInput.value = this.dataset.category;
+                saleInput.value = '';
+            } else if (filterType === 'sale') {
+                categoryInput.value = '';
+                saleInput.value = '1';
+            } else {
+                categoryInput.value = '';
+                saleInput.value = '';
+            }
+            
+            // Re-search if there's a query
+            if (currentQuery.length >= 2) {
+                performMobileSearch(currentQuery);
+            }
+        });
+    });
+    
+    // Popular search handlers
+    document.querySelectorAll('.popular-item, .recent-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-recent')) return;
+            
+            const term = this.dataset.searchTerm;
+            if (term && mobileSearchInput) {
+                mobileSearchInput.value = term;
+                mobileSearchInput.form.submit();
+            }
+        });
+    });
+    
+    // Recent search removal
+    document.querySelectorAll('[data-remove-recent]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const recentId = this.dataset.removeRecent;
+            removeRecentSearch(recentId);
+            this.closest('.recent-item').remove();
+        });
+    });
+    
+    // Clear all recent searches
+    const clearRecentBtn = document.querySelector('[data-clear-recent]');
+    if (clearRecentBtn) {
+        clearRecentBtn.addEventListener('click', function() {
+            clearAllRecentSearches();
+            document.querySelector('[data-recent-searches]').style.display = 'none';
+        });
+    }
+    
+    function showLoading() {
+        popularSearches.classList.add('hidden');
+        searchSuggestions.classList.add('hidden');
+        noResults.classList.add('hidden');
+        searchLoading.classList.remove('hidden');
+    }
+    
+    function showDefaultState() {
+        searchLoading.classList.add('hidden');
+        searchSuggestions.classList.add('hidden');
+        noResults.classList.add('hidden');
+        popularSearches.classList.remove('hidden');
+    }
+    
+    function showSuggestions(suggestions) {
+        searchLoading.classList.add('hidden');
+        popularSearches.classList.add('hidden');
+        noResults.classList.add('hidden');
+        
+        if (suggestions.length > 0) {
+            displaySuggestions(suggestions);
+            searchSuggestions.classList.remove('hidden');
+        } else {
+            searchSuggestions.classList.add('hidden');
+            noResults.classList.remove('hidden');
+        }
+    }
+    
+    function displaySuggestions(suggestions) {
+        const container = searchSuggestions.querySelector('.suggestions-container');
+        
+        container.innerHTML = suggestions.map(suggestion => {
+            if (suggestion.type === 'product') {
+                return `
+                    <a href="${suggestion.url}" class="suggestion-item flex items-center space-x-3 p-3 bg-white border border-secondary-200 rounded-lg hover:bg-secondary-50 transition-colors">
+                        <img src="${suggestion.image}" alt="${suggestion.name}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm text-secondary-900 truncate">${suggestion.name}</div>
+                            <div class="text-xs text-primary-600 font-medium">${suggestion.price}</div>
+                        </div>
+                        ${suggestion.is_on_sale ? '<span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">Sale</span>' : ''}
+                    </a>
+                `;
+            } else if (suggestion.type === 'category') {
+                return `
+                    <a href="${suggestion.url}" class="suggestion-item flex items-center space-x-3 p-3 bg-white border border-secondary-200 rounded-lg hover:bg-secondary-50 transition-colors">
+                        <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="sicon-folder text-primary-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-sm text-secondary-900">${suggestion.name}</div>
+                            <div class="text-xs text-secondary-500">{{ 'Category'|t }}</div>
+                        </div>
+                    </a>
+                `;
+            }
+        }).join('');
+    }
+    
+    async function performMobileSearch(query) {
+        try {
+            const params = new URLSearchParams({
+                q: query,
+                mobile: '1',
+                limit: '8'
+            });
+            
+            if (activeFilter === 'category' && categoryInput.value) {
+                params.append('category', categoryInput.value);
+            } else if (activeFilter === 'sale') {
+                params.append('on_sale', '1');
+            }
+            
+            const response = await fetch(`{{ store.url('api.search.suggestions') }}?${params}`);
+            
+            if (!response.ok) {
+                throw new Error('Search failed');
+            }
+            
+            const data = await response.json();
+            
+            // Only update if this is still the current query
+            if (query === currentQuery) {
+                const suggestions = [
+                    ...(data.products || []).map(p => ({...p, type: 'product'})),
+                    ...(data.categories || []).map(c => ({...c, type: 'category'}))
+                ];
+                
+                showSuggestions(suggestions);
+            }
+        } catch (error) {
+            console.error('Mobile search error:', error);
+            showSuggestions([]);
+        }
+    }
+    
+    async function removeRecentSearch(id) {
+        try {
+            await fetch(`{{ store.url('api.search.recent') }}/${id}`, {
+                method: 'DELETE'
+            });
+        } catch (error) {
+            console.error('Remove recent search error:', error);
+        }
+    }
+    
+    async function clearAllRecentSearches() {
+        try {
+            await fetch(`{{ store.url('api.search.recent') }}`, {
+                method: 'DELETE'
+            });
+        } catch (error) {
+            console.error('Clear recent searches error:', error);
+        }
+    }
+});
+</script>

@@ -1,0 +1,186 @@
+{#
+  Header Search Component
+  Compact search for header use
+#}
+
+<form class="header-search-form relative" action="{{ store.url('product.search') }}" method="get" autocomplete="off">
+    <div class="search-input-wrapper relative">
+        <div class="search-input-group flex items-center bg-secondary-50 border border-secondary-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 transition-all duration-200">
+            <!-- Category Quick Filter -->
+            <div class="category-filter hidden md:block border-r border-secondary-200">
+                <select name="category" 
+                        class="bg-transparent text-sm text-secondary-700 py-2.5 pl-3 pr-6 border-none focus:outline-none appearance-none cursor-pointer">
+                    <option value="">{{ 'All'|t }}</option>
+                    {% for category in store.main_categories|slice(0, 6) %}
+                    <option value="{{ category.id }}" {{ request.category == category.id ? 'selected' : '' }}>
+                        {{ category.name|truncate(15) }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <i class="sicon-keyboard_arrow_down absolute right-1 top-1/2 transform -translate-y-1/2 text-secondary-400 pointer-events-none text-xs"></i>
+            </div>
+            
+            <!-- Search Input -->
+            <input type="text" 
+                   name="q" 
+                   class="search-input flex-1 py-2.5 px-4 text-sm text-secondary-900 placeholder-secondary-500 border-none focus:outline-none bg-transparent"
+                   placeholder="{{ 'Search products...'|t }}"
+                   value="{{ request.q }}"
+                   data-header-search-input>
+            
+            <!-- Search Button -->
+            <button type="submit" 
+                    class="search-submit px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white transition-colors duration-200">
+                <i class="sicon-search text-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Quick Search Results -->
+        <div class="search-dropdown absolute top-full left-0 right-0 bg-white border border-secondary-200 rounded-b-xl shadow-lg z-50 hidden max-h-80 overflow-y-auto" 
+             data-header-search-results>
+             
+            <!-- Loading State -->
+            <div class="search-loading p-4 text-center hidden">
+                <div class="inline-flex items-center space-x-2 text-secondary-500">
+                    <div class="w-4 h-4 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+                    <span class="text-sm">{{ 'Searching...'|t }}</span>
+                </div>
+            </div>
+            
+            <!-- Search Results Container -->
+            <div class="search-results-container">
+                <!-- Results will be populated here -->
+            </div>
+            
+            <!-- No Results -->
+            <div class="no-results p-4 text-center text-secondary-500 text-sm hidden">
+                {{ 'No products found'|t }}
+            </div>
+            
+            <!-- View All Results -->
+            <div class="view-all-container p-3 border-t border-secondary-100 bg-secondary-50 hidden">
+                <button type="submit" 
+                        class="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium py-1">
+                    {{ 'View all results'|t }}
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+// Header Search Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const headerSearchInput = document.querySelector('[data-header-search-input]');
+    const searchResults = document.querySelector('[data-header-search-results]');
+    
+    if (!headerSearchInput || !searchResults) return;
+    
+    let searchTimeout;
+    let currentQuery = '';
+    
+    // Search input handler
+    headerSearchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        currentQuery = query;
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length >= 2) {
+            showLoading();
+            searchTimeout = setTimeout(() => {
+                performHeaderSearch(query);
+            }, 300);
+        } else {
+            hideResults();
+        }
+    });
+    
+    // Show/hide on focus/blur
+    headerSearchInput.addEventListener('focus', function() {
+        if (currentQuery.length >= 2) {
+            showResults();
+        }
+    });
+    
+    headerSearchInput.addEventListener('blur', function() {
+        setTimeout(hideResults, 200);
+    });
+    
+    // Prevent hiding when clicking inside results
+    searchResults.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+    });
+    
+    function showLoading() {
+        searchResults.classList.remove('hidden');
+        searchResults.querySelector('.search-loading').classList.remove('hidden');
+        searchResults.querySelector('.search-results-container').innerHTML = '';
+        searchResults.querySelector('.no-results').classList.add('hidden');
+        searchResults.querySelector('.view-all-container').classList.add('hidden');
+    }
+    
+    function showResults() {
+        searchResults.classList.remove('hidden');
+    }
+    
+    function hideResults() {
+        searchResults.classList.add('hidden');
+        searchResults.querySelector('.search-loading').classList.add('hidden');
+    }
+    
+    async function performHeaderSearch(query) {
+        try {
+            // Simulate API call - replace with actual search endpoint
+            const response = await fetch(`{{ store.url('api.search.suggestions') }}?q=${encodeURIComponent(query)}&limit=5`);
+            
+            if (!response.ok) {
+                throw new Error('Search failed');
+            }
+            
+            const data = await response.json();
+            
+            // Only update if this is still the current query
+            if (query === currentQuery) {
+                displayHeaderSearchResults(data);
+            }
+        } catch (error) {
+            console.error('Header search error:', error);
+            displayHeaderSearchResults({ products: [] });
+        }
+    }
+    
+    function displayHeaderSearchResults(data) {
+        const container = searchResults.querySelector('.search-results-container');
+        const noResults = searchResults.querySelector('.no-results');
+        const viewAll = searchResults.querySelector('.view-all-container');
+        const loading = searchResults.querySelector('.search-loading');
+        
+        loading.classList.add('hidden');
+        
+        if (data.products && data.products.length > 0) {
+            // Display products
+            container.innerHTML = data.products.map(product => `
+                <a href="${product.url}" class="search-result-item flex items-center space-x-3 p-3 hover:bg-secondary-50 transition-colors border-b border-secondary-100 last:border-b-0">
+                    <img src="${product.image}" alt="${product.name}" class="w-10 h-10 object-cover rounded-lg flex-shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm text-secondary-900 truncate">${product.name}</div>
+                        <div class="text-xs text-primary-600 font-medium">${product.price}</div>
+                    </div>
+                    ${product.is_on_sale ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">Sale</span>' : ''}
+                </a>
+            `).join('');
+            
+            noResults.classList.add('hidden');
+            viewAll.classList.remove('hidden');
+        } else {
+            // No results
+            container.innerHTML = '';
+            noResults.classList.remove('hidden');
+            viewAll.classList.add('hidden');
+        }
+        
+        showResults();
+    }
+});
+</script>
