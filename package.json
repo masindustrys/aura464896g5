@@ -1,22 +1,25 @@
 {
-  "name": "arura-theme",
+  "name": "aura-theme",
   "version": "1.0.0",
-  "description": "An elegant and advanced Salla theme with modern features",
-  "main": "assets/js/main.js",
+  "description": "An elegant and advanced Salla theme with modern features based on theme-raed template",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masindustrys/aura464896g5.git"
+  },
   "scripts": {
-    "build": "npm run build:css && npm run build:js",
-    "build:css": "postcss assets/css/main.css -o dist/css/main.min.css --map",
-    "build:js": "terser assets/js/main.js -o dist/js/main.min.js --source-map",
-    "watch": "npm run watch:css & npm run watch:js",
-    "watch:css": "postcss assets/css/main.css -o dist/css/main.min.css --map --watch",
-    "watch:js": "terser assets/js/main.js -o dist/js/main.min.js --source-map --watch",
-    "dev": "npm run watch",
-    "lint": "eslint assets/js/**/*.js",
-    "lint:fix": "eslint assets/js/**/*.js --fix",
-    "format": "prettier --write assets/**/*.{css,js}",
-    "validate": "npm run lint && npm run build",
-    "clean": "rm -rf dist/",
-    "optimize-images": "imagemin assets/images/* --out-dir=dist/images"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "production": "webpack --mode production",
+    "prod": "webpack --mode production",
+    "development": "webpack --mode development",
+    "watch": "webpack --mode development --watch",
+    "build": "npm run production",
+    "dev": "npm run watch"
+  },
+  "author": {
+    "name": "Aura Theme",
+    "email": "contact@aura.theme",
+    "url": "https://aura.theme"
   },
   "keywords": [
     "salla",
@@ -25,81 +28,43 @@
     "responsive",
     "modern",
     "elegant",
-    "arura"
+    "aura",
+    "twilight"
   ],
-  "author": {
-    "name": "Arura Theme",
-    "email": "contact@arura.theme",
-    "url": "https://arura.theme"
+  "dependencies": {
+    "@babel/runtime": "^7.26.10",
+    "animejs": "^3.2.1",
+    "fslightbox": "^3.7.3",
+    "lite-youtube-embed": "^0.2.0",
+    "mmenu-light": "^3.0.9",
+    "sweetalert2": "^11.22.2"
   },
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/masindustrys/aura.git"
-  },
-  "bugs": {
-    "url": "https://github.com/masindustrys/aura/issues"
-  },
-  "homepage": "https://github.com/masindustrys/aura#readme",
   "devDependencies": {
-    "@babel/core": "^7.22.0",
-    "@babel/preset-env": "^7.22.0",
-    "autoprefixer": "^10.4.14",
-    "cssnano": "^6.0.1",
-    "eslint": "^8.42.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "imagemin": "^8.0.1",
-    "imagemin-cli": "^7.0.0",
-    "imagemin-jpeg-recompress": "^7.0.0",
-    "imagemin-pngquant": "^9.0.2",
-    "postcss": "^8.4.24",
-    "postcss-cli": "^10.1.0",
-    "postcss-import": "^15.1.0",
-    "prettier": "^2.8.8",
-    "terser": "^5.18.2"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ],
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "es6": true
-    },
-    "extends": [
-      "eslint:recommended",
-      "prettier"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2022,
-      "sourceType": "module"
-    },
-    "rules": {
-      "no-console": "warn",
-      "no-unused-vars": "error",
-      "prefer-const": "error",
-      "no-var": "error"
-    }
-  },
-  "prettier": {
-    "semi": true,
-    "trailingComma": "es5",
-    "singleQuote": true,
-    "printWidth": 100,
-    "tabWidth": 2,
-    "useTabs": false
-  },
-  "postcss": {
-    "plugins": {
-      "postcss-import": {},
-      "autoprefixer": {},
-      "cssnano": {
-        "preset": "default"
-      }
-    }
+    "@babel/core": "^7.28.0",
+    "@babel/plugin-transform-runtime": "^7.28.0",
+    "@babel/preset-env": "^7.16.5",
+    "@salla.sa/twilight": "^2.14.222",
+    "@salla.sa/twilight-components": "^2.14.222",
+    "@salla.sa/twilight-tailwind-theme": "^2.14.222",
+    "@tailwindcss/forms": "^0.5.2",
+    "@tailwindcss/line-clamp": "^0.4.0",
+    "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "babel-loader-exclude-node-modules-except": "^1.2.1",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^6.5.0",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "glob": "^11.0.3",
+    "mini-css-extract-plugin": "^2.4.3",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "postcss-loader": "^7.0.0",
+    "postcss-preset-env": "^8.0.1",
+    "sass": "^1.43.4",
+    "sass-loader": "^13.2.0",
+    "tailwindcss": "^3.3.3",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^5.0.1"
   }
 }

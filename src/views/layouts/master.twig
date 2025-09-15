@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="{{ store.locale }}" dir="{{ store.direction }}" class="{{ theme_settings.layout_width == 'boxed' ? 'layout-boxed' : 'layout-full' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page.title }} - {{ store.name }}{% endblock %}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block description %}{{ page.description|default(store.description) }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ page.keywords|default(store.keywords) }}{% endblock %}">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}{{ page.title }} - {{ store.name }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ page.description|default(store.description) }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ store.logo }}{% endblock %}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ page.title }} - {{ store.name }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ page.description|default(store.description) }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ store.logo }}{% endblock %}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ canonical_url }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ store.favicon }}">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{{ asset('css/app.css') }}" as="style">
+    <link rel="preload" href="{{ asset('js/app.js') }}" as="script">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% if store.direction == 'rtl' %}
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    {% endif %}
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    
+    <!-- Theme Variables -->
+    <style>
+        :root {
+            --primary-color: {{ theme_settings.primary_color|default('#0ea5e9') }};
+            --secondary-color: {{ theme_settings.secondary_color|default('#64748b') }};
+            --accent-color: {{ theme_settings.accent_color|default('#ef4444') }};
+            --header-height: {{ theme_settings.header_is_sticky ? '80px' : '80px' }};
+            --border-radius: {{ theme_settings.border_radius|default('12px') }};
+        }
+        
+        {% if theme_settings.header_is_sticky %}
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        {% endif %}
+        
+        {% if theme_settings.topnav_is_dark %}
+        .top-nav {
+            background-color: var(--secondary-900);
+            color: white;
+        }
+        {% endif %}
+        
+        {% if theme_settings.footer_is_dark %}
+        .site-footer {
+            background-color: var(--secondary-900);
+            color: white;
+        }
+        {% endif %}
+    </style>
+    
+    <!-- Custom CSS -->
+    {% block head_css %}{% endblock %}
+    
+    <!-- Salla Required Tags -->
+    {{ salla_head_tags() }}
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}aura-theme{% endblock %} {{ theme_settings.header_style|default('modern') }}-header {{ theme_settings.layout_width|default('full') }}-layout">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50">
+        {{ trans('common.skip_to_content') }}
+    </a>
+    
+    <!-- Top Navigation Bar -->
+    {% if theme_settings.important_links %}
+    <div class="top-nav {{ theme_settings.topnav_is_dark ? 'bg-secondary-900 text-white' : 'bg-secondary-100 text-secondary-800' }} py-2 text-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <span>{{ trans('common.welcome_message') }}</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ store.url('pages.landing') }}" class="hover:text-primary-600 transition-colors">
+                        {{ trans('pages.landing') }}
+                    </a>
+                    <a href="{{ store.url('blog.index') }}" class="hover:text-primary-600 transition-colors">
+                        {{ trans('pages.blog') }}
+                    </a>
+                    <a href="{{ store.url('pages.about') }}" class="hover:text-primary-600 transition-colors">
+                        {{ trans('pages.about') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Header -->
+    {% include 'components/header/header.twig' %}
+    
+    <!-- Main Content -->
+    <main id="main-content" class="main-content {{ theme_settings.header_is_sticky ? 'pt-20' : '' }}">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    {% include 'components/footer/footer.twig' %}
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        {% include 'components/header/mobile-menu.twig' %}
+    </div>
+    
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-overlay-content">
+            {% include 'components/header/search-form.twig' %}
+        </div>
+    </div>
+    
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-sidebar-content">
+            {% include 'components/cart/cart-sidebar.twig' %}
+        </div>
+    </div>
+    <div class="cart-overlay" id="cartOverlay"></div>
+    
+    <!-- Quick View Modal -->
+    <div class="quick-view-modal" id="quickViewModal">
+        <div class="modal-backdrop" id="quickViewBackdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">{{ trans('product.quick_view') }}</h3>
+                <button class="modal-close" id="quickViewClose">
+                    <i class="sicon-cancel"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                <!-- Quick view content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notifications Container -->
+    <div class="notifications-container" id="notificationsContainer"></div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner">
+            <div class="double-bounce1"></div>
+            <div class="double-bounce2"></div>
+        </div>
+    </div>
+    
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="{{ trans('common.back_to_top') }}">
+        <i class="sicon-arrow-up"></i>
+    </button>
+    
+    <!-- Salla Required Scripts -->
+    {{ salla_footer_tags() }}
+    
+    <!-- JavaScript Files -->
+    <script src="{{ asset('js/app.js') }}" defer></script>
+    
+    <!-- Theme Configuration -->
+    <script>
+        window.AuraTheme = window.AuraTheme || {};
+        window.AuraTheme.config = {
+            isRTL: {{ store.direction == 'rtl' ? 'true' : 'false' }},
+            locale: '{{ store.locale }}',
+            currency: '{{ store.currency }}',
+            settings: {
+                headerSticky: {{ theme_settings.header_is_sticky ? 'true' : 'false' }},
+                imageZoom: {{ theme_settings.imageZoom ? 'true' : 'false' }},
+                stickyAddToCart: {{ theme_settings.sticky_add_to_cart ? 'true' : 'false' }},
+                showTags: {{ theme_settings.show_tags ? 'true' : 'false' }},
+                sliderBackgroundSize: '{{ theme_settings.slider_background_size|default('contain') }}',
+                squarePhotoBackgroundSize: '{{ theme_settings.squar_photo_bg_image_size|default('contain') }}',
+                verticalFixedProducts: {{ theme_settings.vertical_fixed_products ? 'true' : 'false' }},
+                isMoreButtonEnabled: {{ theme_settings.is_more_button_enabled ? 'true' : 'false' }}
+            },
+            urls: {
+                home: '{{ store.url }}',
+                cart: '{{ store.url('cart.index') }}',
+                wishlist: '{{ store.url('customer.wishlist') }}',
+                compare: '{{ store.url('product.compare') }}',
+                search: '{{ store.url('product.search') }}'
+            }
+        };
+    </script>
+    
+    <!-- Custom Scripts -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- Analytics and Tracking -->
+    {{ store.analytics_code|raw }}
+</body>
+</html>

@@ -1,0 +1,164 @@
+<div class="cart-sidebar__header">
+    <h3 class="cart-sidebar__title">{{ 'Your Cart'|t }}</h3>
+    <button class="cart-sidebar__close" id="cartSidebarClose">
+        <i class="icon-close"></i>
+    </button>
+</div>
+
+<div class="cart-sidebar__content">
+    {% if cart.items_count > 0 %}
+    <!-- Cart Items -->
+    <div class="cart-items">
+        {% for item in cart.items %}
+        <div class="cart-item" data-item-id="{{ item.id }}">
+            <div class="cart-item__image">
+                <img src="{{ item.product.image }}" alt="{{ item.product.name }}" loading="lazy">
+            </div>
+            
+            <div class="cart-item__details">
+                <h4 class="cart-item__title">
+                    <a href="{{ item.product.url }}">{{ item.product.name }}</a>
+                </h4>
+                
+                {% if item.variant %}
+                <div class="cart-item__variant">
+                    {% for option in item.variant.options %}
+                    <span class="variant-option">{{ option.name }}: {{ option.value }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="cart-item__price">
+                    {% if item.sale_price != item.regular_price %}
+                    <span class="price price--sale">{{ item.sale_price }}</span>
+                    <span class="price price--regular">{{ item.regular_price }}</span>
+                    {% else %}
+                    <span class="price">{{ item.price }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="cart-item__quantity">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn quantity-decrease" data-item-id="{{ item.id }}">
+                            <i class="icon-minus"></i>
+                        </button>
+                        <input type="number" 
+                               class="quantity-input" 
+                               value="{{ item.quantity }}" 
+                               min="1" 
+                               max="{{ item.product.stock_quantity }}"
+                               data-item-id="{{ item.id }}">
+                        <button class="quantity-btn quantity-increase" data-item-id="{{ item.id }}">
+                            <i class="icon-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cart-item__actions">
+                <button class="cart-item__remove" data-item-id="{{ item.id }}" title="{{ 'Remove Item'|t }}">
+                    <i class="icon-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Cart Summary -->
+    <div class="cart-summary">
+        <div class="cart-summary__item">
+            <span class="cart-summary__label">{{ 'Subtotal'|t }}</span>
+            <span class="cart-summary__value">{{ cart.subtotal }}</span>
+        </div>
+        
+        {% if cart.discount > 0 %}
+        <div class="cart-summary__item cart-summary__item--discount">
+            <span class="cart-summary__label">{{ 'Discount'|t }}</span>
+            <span class="cart-summary__value">-{{ cart.discount }}</span>
+        </div>
+        {% endif %}
+        
+        {% if cart.shipping_cost > 0 %}
+        <div class="cart-summary__item">
+            <span class="cart-summary__label">{{ 'Shipping'|t }}</span>
+            <span class="cart-summary__value">{{ cart.shipping_cost }}</span>
+        </div>
+        {% else %}
+        <div class="cart-summary__item cart-summary__item--free">
+            <span class="cart-summary__label">{{ 'Shipping'|t }}</span>
+            <span class="cart-summary__value">{{ 'Free'|t }}</span>
+        </div>
+        {% endif %}
+        
+        {% if cart.tax > 0 %}
+        <div class="cart-summary__item">
+            <span class="cart-summary__label">{{ 'Tax'|t }}</span>
+            <span class="cart-summary__value">{{ cart.tax }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="cart-summary__item cart-summary__item--total">
+            <span class="cart-summary__label">{{ 'Total'|t }}</span>
+            <span class="cart-summary__value">{{ cart.total }}</span>
+        </div>
+    </div>
+    
+    <!-- Shipping Progress -->
+    {% if store.free_shipping_threshold and cart.subtotal_amount < store.free_shipping_threshold %}
+    <div class="shipping-progress">
+        <div class="shipping-progress__info">
+            <i class="icon-truck"></i>
+            <span>{{ 'Add'|t }} {{ store.free_shipping_threshold - cart.subtotal_amount }} {{ 'more for free shipping'|t }}</span>
+        </div>
+        <div class="shipping-progress__bar">
+            <div class="shipping-progress__fill" style="width: {{ (cart.subtotal_amount / store.free_shipping_threshold * 100)|round }}%"></div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Cart Actions -->
+    <div class="cart-actions">
+        <a href="{{ url('cart') }}" class="btn btn--outline btn--full">{{ 'View Cart'|t }}</a>
+        <a href="{{ url('checkout') }}" class="btn btn--primary btn--full">{{ 'Checkout'|t }}</a>
+    </div>
+    
+    <!-- Recommended Products -->
+    {% if cart.recommended_products %}
+    <div class="cart-recommendations">
+        <h4 class="cart-recommendations__title">{{ 'You might also like'|t }}</h4>
+        <div class="cart-recommendations__products">
+            {% for product in cart.recommended_products|slice(0, 3) %}
+            <div class="cart-recommendation">
+                <div class="cart-recommendation__image">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                </div>
+                <div class="cart-recommendation__details">
+                    <h5 class="cart-recommendation__title">{{ product.name }}</h5>
+                    <div class="cart-recommendation__price">{{ product.price }}</div>
+                    <button class="btn btn--sm btn--primary add-to-cart-btn" data-product-id="{{ product.id }}">
+                        {{ 'Add'|t }}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="cart-empty">
+        <div class="cart-empty__icon">
+            <i class="icon-cart"></i>
+        </div>
+        <h3 class="cart-empty__title">{{ 'Your cart is empty'|t }}</h3>
+        <p class="cart-empty__description">{{ 'Add some products to get started'|t }}</p>
+        <a href="{{ url('products') }}" class="btn btn--primary">{{ 'Continue Shopping'|t }}</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Cart Loading Overlay -->
+<div class="cart-loading" id="cartLoading" style="display: none;">
+    <div class="spinner"></div>
+</div>
