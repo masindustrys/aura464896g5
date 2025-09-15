@@ -1,0 +1,331 @@
+{#
+Main Header Component
+Modern responsive header with navigation, search, and user actions
+#}
+
+<header class="site-header {{ theme_settings.header_is_sticky ? 'sticky top-0 z-50' : 'relative' }} 
+               {{ theme_settings.header_style|default('modern') }}-style
+               bg-white/95 backdrop-blur-md border-b border-secondary-200 transition-all duration-300">
+    
+    <div class="header-content">
+        <div class="container mx-auto px-4">
+            <div class="header-nav flex items-center justify-between h-20">
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle lg:hidden p-2 text-secondary-600 hover:text-primary-600 
+                               hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                        aria-label="{{ trans('header.main_menu') }}">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                
+                <!-- Logo -->
+                <div class="logo flex items-center space-x-3">
+                    <a href="{{ store.url }}" class="flex items-center space-x-3 group">
+                        {% if store.logo %}
+                        <img src="{{ store.logo }}" 
+                             alt="{{ store.name }}"
+                             class="h-10 w-auto group-hover:scale-105 transition-transform duration-200">
+                        {% else %}
+                        <div class="h-10 w-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-lg 
+                                    flex items-center justify-center text-white font-bold text-xl">
+                            {{ store.name|first|upper }}
+                        </div>
+                        <span class="text-xl font-bold text-secondary-900 group-hover:text-primary-600 
+                                     transition-colors duration-200">
+                            {{ store.name }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </div>
+                
+                <!-- Main Navigation -->
+                <nav class="main-nav hidden lg:flex items-center space-x-8">
+                    <!-- Home -->
+                    <div class="nav-item">
+                        <a href="{{ store.url }}" 
+                           class="nav-link text-secondary-700 hover:text-primary-600 px-3 py-2 text-sm font-medium 
+                                  transition-colors duration-200 {{ current_page == 'home' ? 'active text-primary-600' : '' }}">
+                            {{ trans('common.home') }}
+                        </a>
+                    </div>
+                    
+                    <!-- Categories with Mega Menu -->
+                    <div class="nav-item relative group">
+                        <a href="{{ store.url('categories.index') }}" 
+                           class="nav-link text-secondary-700 hover:text-primary-600 px-3 py-2 text-sm font-medium 
+                                  transition-colors duration-200 flex items-center space-x-1">
+                            <span>{{ trans('common.categories') }}</span>
+                            <i class="sicon-arrow-down text-xs"></i>
+                        </a>
+                        
+                        <!-- Mega Menu Dropdown -->
+                        {% if store.categories %}
+                        <div class="dropdown-menu absolute top-full left-0 mt-2 w-96 bg-white rounded-lg 
+                                    shadow-strong border border-secondary-200 opacity-0 invisible 
+                                    transform translate-y-2 transition-all duration-200 group-hover:opacity-100 
+                                    group-hover:visible group-hover:transform group-hover:translate-y-0">
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    {% for category in store.categories|slice(0, 8) %}
+                                    <a href="{{ category.url }}" 
+                                       class="dropdown-item flex items-center space-x-3 p-3 rounded-lg 
+                                              hover:bg-secondary-50 hover:text-primary-600 transition-all duration-150 group">
+                                        {% if category.image %}
+                                        <img src="{{ category.image }}" 
+                                             alt="{{ category.name }}"
+                                             class="w-10 h-10 rounded-full object-cover">
+                                        {% else %}
+                                        <div class="w-10 h-10 bg-primary-100 text-primary-600 rounded-full 
+                                                    flex items-center justify-center">
+                                            <i class="sicon-category text-sm"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <h4 class="font-medium text-sm">{{ category.name }}</h4>
+                                            <p class="text-xs text-secondary-500">{{ category.products_count }} items</p>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                {% if store.categories|length > 8 %}
+                                <div class="mt-4 pt-4 border-t border-secondary-200">
+                                    <a href="{{ store.url('categories.index') }}" 
+                                       class="text-primary-600 hover:text-primary-700 text-sm font-medium 
+                                              flex items-center space-x-2">
+                                        <span>{{ trans('common.view_all') }}</span>
+                                        <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }}"></i>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Brands -->
+                    <div class="nav-item">
+                        <a href="{{ store.url('brands.index') }}" 
+                           class="nav-link text-secondary-700 hover:text-primary-600 px-3 py-2 text-sm font-medium 
+                                  transition-colors duration-200">
+                            {{ trans('common.brands') }}
+                        </a>
+                    </div>
+                    
+                    <!-- Blog -->
+                    {% if store.blog_enabled %}
+                    <div class="nav-item">
+                        <a href="{{ store.url('blog.index') }}" 
+                           class="nav-link text-secondary-700 hover:text-primary-600 px-3 py-2 text-sm font-medium 
+                                  transition-colors duration-200">
+                            {{ trans('common.blog') }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- About -->
+                    <div class="nav-item">
+                        <a href="{{ store.url('pages.about') }}" 
+                           class="nav-link text-secondary-700 hover:text-primary-600 px-3 py-2 text-sm font-medium 
+                                  transition-colors duration-200">
+                            {{ trans('common.about') }}
+                        </a>
+                    </div>
+                    
+                    <!-- Contact -->
+                    <div class="nav-item">
+                        <a href="{{ store.url('pages.contact') }}" 
+                           class="nav-link text-secondary-700 hover:text-primary-600 px-3 py-2 text-sm font-medium 
+                                  transition-colors duration-200">
+                            {{ trans('common.contact') }}
+                        </a>
+                    </div>
+                </nav>
+                
+                <!-- Header Actions -->
+                <div class="header-actions flex items-center space-x-4">
+                    
+                    <!-- Search Toggle -->
+                    <button class="search-toggle action-btn relative p-2 text-secondary-600 hover:text-primary-600 
+                                   hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                            aria-label="{{ trans('header.search_toggle') }}">
+                        <i class="sicon-search text-xl"></i>
+                    </button>
+                    
+                    <!-- Language & Currency Switcher -->
+                    {% if store.locales|length > 1 or store.currencies|length > 1 %}
+                    <div class="flex items-center space-x-2">
+                        <!-- Language Switcher -->
+                        {% if store.locales|length > 1 %}
+                        <div class="relative group">
+                            <button class="action-btn p-2 text-secondary-600 hover:text-primary-600 
+                                           hover:bg-secondary-100 rounded-lg transition-all duration-200 
+                                           flex items-center space-x-1"
+                                    aria-label="{{ trans('header.language_toggle') }}">
+                                <i class="sicon-globe text-lg"></i>
+                                <span class="text-xs uppercase font-medium">{{ store.locale }}</span>
+                            </button>
+                            <div class="absolute top-full right-0 mt-2 w-32 bg-white rounded-lg shadow-lg 
+                                        border border-secondary-200 opacity-0 invisible transform translate-y-2 
+                                        transition-all duration-200 group-hover:opacity-100 group-hover:visible 
+                                        group-hover:transform group-hover:translate-y-0 z-50">
+                                {% for locale in store.locales %}
+                                <a href="{{ store.url_for_locale(locale.code) }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150 
+                                          {{ locale.code == store.locale ? 'bg-primary-50 text-primary-600' : '' }}">
+                                    {{ locale.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Currency Switcher -->
+                        {% if store.currencies|length > 1 %}
+                        <div class="relative group">
+                            <button class="action-btn p-2 text-secondary-600 hover:text-primary-600 
+                                           hover:bg-secondary-100 rounded-lg transition-all duration-200 
+                                           flex items-center space-x-1"
+                                    aria-label="{{ trans('header.currency_toggle') }}">
+                                <span class="text-xs uppercase font-medium">{{ store.currency }}</span>
+                            </button>
+                            <div class="absolute top-full right-0 mt-2 w-24 bg-white rounded-lg shadow-lg 
+                                        border border-secondary-200 opacity-0 invisible transform translate-y-2 
+                                        transition-all duration-200 group-hover:opacity-100 group-hover:visible 
+                                        group-hover:transform group-hover:translate-y-0 z-50">
+                                {% for currency in store.currencies %}
+                                <a href="{{ store.url_for_currency(currency.code) }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150 
+                                          {{ currency.code == store.currency ? 'bg-primary-50 text-primary-600' : '' }}">
+                                    {{ currency.code }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Wishlist -->
+                    <a href="{{ store.url('customer.wishlist') }}" 
+                       class="wishlist-toggle action-btn relative p-2 text-secondary-600 hover:text-primary-600 
+                              hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                       aria-label="{{ trans('header.wishlist_toggle') }}">
+                        <i class="sicon-heart text-xl"></i>
+                        {% if user.wishlist_count > 0 %}
+                        <span class="badge absolute -top-1 -right-1 bg-accent-500 text-white text-xs 
+                                     w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                            {{ user.wishlist_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- Cart -->
+                    <button class="cart-toggle action-btn relative p-2 text-secondary-600 hover:text-primary-600 
+                                   hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                            aria-label="{{ trans('header.cart_toggle') }}">
+                        <i class="sicon-cart text-xl"></i>
+                        {% if cart.count > 0 %}
+                        <span class="badge absolute -top-1 -right-1 bg-accent-500 text-white text-xs 
+                                     w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                            {{ cart.count }}
+                        </span>
+                        {% endif %}
+                    </button>
+                    
+                    <!-- User Account -->
+                    <div class="relative group">
+                        <button class="action-btn p-2 text-secondary-600 hover:text-primary-600 
+                                       hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                                aria-label="{{ trans('header.account_toggle') }}">
+                            {% if user.is_logged %}
+                            <img src="{{ user.avatar|default(asset('images/default-avatar.png')) }}" 
+                                 alt="{{ user.name }}"
+                                 class="w-6 h-6 rounded-full object-cover">
+                            {% else %}
+                            <i class="sicon-user text-xl"></i>
+                            {% endif %}
+                        </button>
+                        
+                        <!-- Account Dropdown -->
+                        <div class="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg 
+                                    border border-secondary-200 opacity-0 invisible transform translate-y-2 
+                                    transition-all duration-200 group-hover:opacity-100 group-hover:visible 
+                                    group-hover:transform group-hover:translate-y-0 z-50">
+                            {% if user.is_logged %}
+                            <div class="p-4 border-b border-secondary-200">
+                                <p class="font-medium text-secondary-900">{{ user.name }}</p>
+                                <p class="text-sm text-secondary-500">{{ user.email }}</p>
+                            </div>
+                            <div class="py-2">
+                                <a href="{{ store.url('customer.profile') }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150">
+                                    {{ trans('account.dashboard') }}
+                                </a>
+                                <a href="{{ store.url('customer.orders') }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150">
+                                    {{ trans('account.orders') }}
+                                </a>
+                                <a href="{{ store.url('customer.addresses') }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150">
+                                    {{ trans('account.addresses') }}
+                                </a>
+                                <div class="border-t border-secondary-200 mt-2 pt-2">
+                                    <a href="{{ store.url('customer.logout') }}" 
+                                       class="block px-4 py-2 text-sm text-accent-600 hover:bg-accent-50 
+                                              transition-colors duration-150">
+                                        {{ trans('common.logout') }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="py-2">
+                                <a href="{{ store.url('customer.login') }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150">
+                                    {{ trans('common.login') }}
+                                </a>
+                                <a href="{{ store.url('customer.register') }}" 
+                                   class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 
+                                          hover:text-primary-600 transition-colors duration-150">
+                                    {{ trans('common.register') }}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Progress Bar for Loading -->
+    <div class="loading-progress-bar absolute bottom-0 left-0 h-0.5 bg-primary-600 
+                transition-all duration-300 opacity-0" id="headerProgressBar"></div>
+</header>
+
+<!-- Search Overlay -->
+<div class="search-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-50 opacity-0 invisible 
+            transition-all duration-300" id="searchOverlay">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl w-full max-w-2xl transform scale-75 opacity-0 
+                    transition-all duration-300" id="searchModal">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-secondary-900">{{ trans('common.search') }}</h3>
+                    <button class="search-close p-2 text-secondary-400 hover:text-secondary-600 
+                                   transition-colors" aria-label="{{ trans('common.close') }}">
+                        <i class="sicon-cancel text-xl"></i>
+                    </button>
+                </div>
+                {% include 'components/header/search-form.twig' %}
+            </div>
+        </div>
+    </div>
+</div>

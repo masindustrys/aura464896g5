@@ -1,16 +1,15 @@
 import 'sweetalert2/dist/sweetalert2.min.css';
-import 'fslightbox/index.css';
 import 'lite-youtube-embed/src/lite-yt-embed.css';
 
 // Import Salla Twilight
 import Twilight from '@salla.sa/twilight';
-import TwilightComponents from '@salla.sa/twilight-components';
+// Note: TwilightComponents auto-initializes through custom elements
 
 // Import third-party libraries
 import Swal from 'sweetalert2';
 import { fsLightbox } from 'fslightbox';
 import anime from 'animejs/lib/anime.es.js';
-import { MmenuLight } from 'mmenu-light';
+import MmenuLight from 'mmenu-light';
 import 'lite-youtube-embed';
 
 /**
@@ -52,8 +51,8 @@ class AuraTheme {
         }
       });
 
-      // Initialize Twilight Components
-      TwilightComponents.init();
+      // Initialize Twilight Components - auto-initializes through custom elements
+      // TwilightComponents.init();
       
       console.log('✅ Salla Twilight initialized');
     } catch (error) {

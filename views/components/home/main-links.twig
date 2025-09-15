@@ -1,0 +1,175 @@
+{#
+Main Links Component
+Quick navigation links for easy access to main categories
+#}
+
+{% set merge_with_top = component.merge_with_top_component|default(false) %}
+
+<section class="main-links {{ merge_with_top ? '-mt-16 relative z-10' : 'py-16' }}" data-animation="slide-up">
+    <div class="container mx-auto px-4">
+        <!-- Section Header -->
+        {% if component.title and not merge_with_top %}
+        <div class="text-center mb-12">
+            <h2 class="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
+                {{ component.title }}
+            </h2>
+        </div>
+        {% endif %}
+        
+        <!-- Links Grid -->
+        <div class="main-links-grid {{ merge_with_top ? 'bg-white rounded-2xl shadow-strong p-8' : '' }}">
+            {% if component.show_cats and component.categories %}
+                {# Show Categories #}
+                <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 lg:gap-6" data-animation="stagger">
+                    {% for category in component.categories %}
+                    <a href="{{ category.url }}" 
+                       class="link-item group text-center p-6 bg-white rounded-xl border border-secondary-200 
+                              hover:border-primary-300 hover:shadow-medium transition-all duration-300 
+                              hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        
+                        <!-- Category Image -->
+                        {% if category.image %}
+                        <div class="link-icon w-16 h-16 mx-auto mb-4 overflow-hidden rounded-full bg-secondary-100">
+                            <img src="{{ category.image }}" 
+                                 alt="{{ category.name }}"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                        {% else %}
+                        <div class="link-icon w-16 h-16 mx-auto mb-4 flex items-center justify-center 
+                                    bg-primary-100 text-primary-600 rounded-full group-hover:bg-primary-200 
+                                    transition-colors duration-300">
+                            <i class="sicon-category text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Category Name -->
+                        <h3 class="link-title text-sm font-medium text-secondary-800 
+                                   group-hover:text-primary-700 transition-colors duration-200 line-clamp-2">
+                            {{ category.name }}
+                        </h3>
+                        
+                        <!-- Product Count (Optional) -->
+                        {% if category.products_count %}
+                        <p class="text-xs text-secondary-500 mt-1">
+                            {{ category.products_count }} {{ trans('common.products') }}
+                        </p>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {# Show Custom Links #}
+                <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 lg:gap-6" data-animation="stagger">
+                    {% for link in component.links %}
+                    <a href="{{ link.url }}" 
+                       class="link-item group text-center p-6 bg-white rounded-xl border border-secondary-200 
+                              hover:border-primary-300 hover:shadow-medium transition-all duration-300 
+                              hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        
+                        <!-- Icon -->
+                        <div class="link-icon w-16 h-16 mx-auto mb-4 flex items-center justify-center 
+                                    bg-primary-100 text-primary-600 rounded-full group-hover:bg-primary-200 
+                                    group-hover:scale-110 transition-all duration-300">
+                            {% if link.icon %}
+                            <i class="{{ link.icon }} text-2xl"></i>
+                            {% else %}
+                            <i class="sicon-store text-2xl"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Title -->
+                        <h3 class="link-title text-sm font-medium text-secondary-800 
+                                   group-hover:text-primary-700 transition-colors duration-200 line-clamp-2">
+                            {{ link.title }}
+                        </h3>
+                        
+                        <!-- Subtitle (Optional) -->
+                        {% if link.subtitle %}
+                        <p class="text-xs text-secondary-500 mt-1 line-clamp-1">
+                            {{ link.subtitle }}
+                        </p>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Navigation Controls -->
+        {% if component.show_controls and (component.links|length > 6 or component.categories|length > 6) %}
+        <div class="flex justify-center mt-8">
+            <div class="flex space-x-2">
+                <button class="slider-prev w-10 h-10 bg-secondary-100 hover:bg-primary-600 hover:text-white 
+                               text-secondary-600 rounded-full flex items-center justify-center 
+                               transition-all duration-200 disabled:opacity-50"
+                        aria-label="{{ trans('common.previous') }}">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'right' : 'left' }}"></i>
+                </button>
+                <button class="slider-next w-10 h-10 bg-secondary-100 hover:bg-primary-600 hover:text-white 
+                               text-secondary-600 rounded-full flex items-center justify-center 
+                               transition-all duration-200 disabled:opacity-50"
+                        aria-label="{{ trans('common.next') }}">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }}"></i>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Additional Styles for Merged Component -->
+{% if merge_with_top %}
+<style>
+.main-links {
+    margin-top: -80px;
+    padding-top: 0;
+}
+
+.main-links-grid {
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .main-links {
+        margin-top: -40px;
+    }
+    
+    .main-links-grid {
+        margin-top: 20px;
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endif %}
+
+<!-- Schema Markup for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    "name": "Quick Links",
+    "description": "Quick access to main product categories and services",
+    "url": "{{ store.url }}",
+    "hasPart": [
+        {% if component.show_cats and component.categories %}
+            {% for category in component.categories %}
+            {
+                "@type": "WebPage",
+                "name": "{{ category.name }}",
+                "url": "{{ category.url }}",
+                "description": "{{ category.description|default(category.name ~ ' category') }}"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% else %}
+            {% for link in component.links %}
+            {
+                "@type": "WebPage",
+                "name": "{{ link.title }}",
+                "url": "{{ link.url }}",
+                "description": "{{ link.subtitle|default(link.title) }}"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% endif %}
+    ]
+}
+</script>
