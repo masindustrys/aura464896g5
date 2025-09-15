@@ -1,0 +1,962 @@
+{#
+  Enhanced Wishlist Component
+  Modern wishlist with sharing, organization, and purchase tracking
+#}
+
+<div class="enhanced-wishlist bg-white rounded-xl border border-secondary-200 overflow-hidden"
+     data-component="enhanced-wishlist">
+     
+    <!-- Wishlist Header -->
+    <div class="wishlist-header p-6 border-b border-secondary-200 bg-gradient-to-r from-primary-50 to-secondary-50">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="wishlist-icon w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <i class="sicon-heart-solid text-primary-600 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-secondary-900">
+                        {{ user.name ? user.name ~ '\'s Wishlist' : 'My Wishlist'|t }}
+                    </h2>
+                    <p class="text-sm text-secondary-600">
+                        {{ '%d items saved'|t|format(wishlist.items_count|default(0)) }} • 
+                        {{ 'Updated %s'|t|format(wishlist.updated_at|date('M j, Y')) }}
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Wishlist Actions -->
+            <div class="wishlist-actions flex items-center space-x-3">
+                <!-- View Mode Toggle -->
+                <div class="view-mode-toggle bg-white rounded-lg p-1 flex">
+                    <button class="view-mode-btn active px-3 py-1 text-sm rounded transition-all"
+                            data-view-mode="grid">
+                        <i class="sicon-grid"></i>
+                    </button>
+                    <button class="view-mode-btn px-3 py-1 text-sm rounded transition-all"
+                            data-view-mode="list">
+                        <i class="sicon-list"></i>
+                    </button>
+                </div>
+                
+                <!-- Share Wishlist -->
+                <button class="btn btn-outline btn-sm flex items-center space-x-2"
+                        data-share-wishlist>
+                    <i class="sicon-share"></i>
+                    <span>{{ 'Share'|t }}</span>
+                </button>
+                
+                <!-- Create Collection -->
+                <button class="btn btn-primary btn-sm flex items-center space-x-2"
+                        data-create-collection>
+                    <i class="sicon-plus"></i>
+                    <span>{{ 'Create Collection'|t }}</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Wishlist Collections -->
+        {% if wishlist.collections|length > 0 %}
+        <div class="wishlist-collections mt-4">
+            <div class="collections-tabs flex space-x-2 overflow-x-auto pb-2">
+                <button class="collection-tab active flex-shrink-0 px-4 py-2 bg-white text-primary-600 border border-primary-200 rounded-lg text-sm font-medium transition-all hover:bg-primary-50"
+                        data-collection="all">
+                    {{ 'All Items'|t }} ({{ wishlist.items_count }})
+                </button>
+                {% for collection in wishlist.collections %}
+                <button class="collection-tab flex-shrink-0 px-4 py-2 bg-white/70 text-secondary-600 border border-secondary-200 rounded-lg text-sm font-medium transition-all hover:bg-white"
+                        data-collection="{{ collection.id }}">
+                    {{ collection.name }} ({{ collection.items_count }})
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Wishlist Controls -->
+    <div class="wishlist-controls p-4 bg-secondary-50 border-b border-secondary-200">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+            
+            <!-- Filters and Search -->
+            <div class="filters-search flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <!-- Search -->
+                <div class="search-box relative">
+                    <input type="text" 
+                           placeholder="{{ 'Search wishlist...'|t }}"
+                           class="w-64 pl-10 pr-4 py-2 text-sm border border-secondary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                           data-wishlist-search>
+                    <i class="sicon-search absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-400"></i>
+                </div>
+                
+                <!-- Filters -->
+                <div class="filters flex items-center space-x-3">
+                    <select class="price-filter text-sm border border-secondary-200 rounded px-3 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            data-price-filter>
+                        <option value="">{{ 'All prices'|t }}</option>
+                        <option value="0-50">{{ 'Under $50'|t }}</option>
+                        <option value="50-100">{{ '$50 - $100'|t }}</option>
+                        <option value="100-200">{{ '$100 - $200'|t }}</option>
+                        <option value="200+">{{ 'Over $200'|t }}</option>
+                    </select>
+                    
+                    <select class="availability-filter text-sm border border-secondary-200 rounded px-3 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            data-availability-filter>
+                        <option value="">{{ 'All items'|t }}</option>
+                        <option value="in_stock">{{ 'In stock'|t }}</option>
+                        <option value="on_sale">{{ 'On sale'|t }}</option>
+                        <option value="price_drop">{{ 'Price dropped'|t }}</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Sort and Bulk Actions -->
+            <div class="sort-bulk flex items-center space-x-3">
+                <!-- Sort -->
+                <select class="sort-select text-sm border border-secondary-200 rounded px-3 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        data-sort-wishlist>
+                    <option value="newest">{{ 'Recently added'|t }}</option>
+                    <option value="oldest">{{ 'Oldest first'|t }}</option>
+                    <option value="price_low">{{ 'Price: Low to High'|t }}</option>
+                    <option value="price_high">{{ 'Price: High to Low'|t }}</option>
+                    <option value="name">{{ 'Name A-Z'|t }}</option>
+                </select>
+                
+                <!-- Bulk Actions -->
+                <div class="bulk-actions hidden" data-bulk-actions>
+                    <button class="btn btn-outline btn-sm flex items-center space-x-1"
+                            data-bulk-add-to-cart>
+                        <i class="sicon-cart"></i>
+                        <span>{{ 'Add Selected to Cart'|t }}</span>
+                    </button>
+                    <button class="btn btn-ghost btn-sm text-red-600 hover:text-red-700"
+                            data-bulk-remove>
+                        <i class="sicon-trash"></i>
+                        <span>{{ 'Remove Selected'|t }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Selected Items Info -->
+        <div class="selected-info hidden mt-3 p-3 bg-primary-50 border border-primary-200 rounded-lg"
+             data-selected-info>
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-primary-700">
+                    <span data-selected-count>0</span> {{ 'items selected'|t }}
+                </span>
+                <button class="clear-selection text-sm text-primary-600 hover:text-primary-700"
+                        data-clear-selection>
+                    {{ 'Clear selection'|t }}
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wishlist Content -->
+    <div class="wishlist-content">
+        {% if wishlist.items|length > 0 %}
+        
+        <!-- Wishlist Items -->
+        <div class="wishlist-items p-6" data-wishlist-items>
+            <div class="items-container grid-view grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                 data-items-container>
+                 
+                {% for item in wishlist.items %}
+                <div class="wishlist-item bg-white border border-secondary-200 rounded-xl overflow-hidden hover:shadow-medium transition-all duration-300 group"
+                     data-item-id="{{ item.id }}"
+                     data-product-id="{{ item.product.id }}"
+                     data-price="{{ item.product.price_amount }}"
+                     data-collection="{{ item.collection_id|default('all') }}">
+                     
+                    <!-- Item Selection -->
+                    <div class="item-selection absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   class="item-checkbox sr-only"
+                                   data-item-id="{{ item.id }}">
+                            <div class="checkbox-custom w-5 h-5 bg-white border-2 border-secondary-300 rounded flex items-center justify-center">
+                                <i class="sicon-check text-white text-xs hidden"></i>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- Product Image -->
+                    <div class="item-image relative overflow-hidden">
+                        <a href="{{ item.product.url }}" class="block aspect-square">
+                            <img src="{{ item.product.image }}" 
+                                 alt="{{ item.product.name }}"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </a>
+                        
+                        <!-- Sale Badge -->
+                        {% if item.product.is_on_sale %}
+                        <div class="sale-badge absolute top-3 right-3">
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                {% if item.product.discount_percentage %}
+                                -{{ item.product.discount_percentage }}%
+                                {% else %}
+                                {{ 'Sale'|t }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Price Drop Badge -->
+                        {% if item.price_dropped %}
+                        <div class="price-drop-badge absolute top-3 right-3">
+                            <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                {{ 'Price Drop!'|t }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Quick Actions -->
+                        <div class="quick-actions absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                            <button class="action-btn quick-view-btn w-10 h-10 bg-white text-secondary-600 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                                    data-product-id="{{ item.product.id }}"
+                                    title="{{ 'Quick View'|t }}">
+                                <i class="sicon-eye"></i>
+                            </button>
+                            
+                            <button class="action-btn share-btn w-10 h-10 bg-white text-secondary-600 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                                    data-product-url="{{ item.product.url }}"
+                                    title="{{ 'Share'|t }}">
+                                <i class="sicon-share"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Item Content -->
+                    <div class="item-content p-4">
+                        <!-- Product Name -->
+                        <h3 class="product-name font-semibold text-secondary-900 mb-2 line-clamp-2">
+                            <a href="{{ item.product.url }}" class="hover:text-primary-600 transition-colors">
+                                {{ item.product.name }}
+                            </a>
+                        </h3>
+                        
+                        <!-- Product Brand -->
+                        {% if item.product.brand %}
+                        <div class="product-brand text-xs text-secondary-500 mb-2">
+                            {{ item.product.brand.name }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Price -->
+                        <div class="product-price mb-3">
+                            {% if item.product.is_on_sale %}
+                            <div class="flex items-center space-x-2">
+                                <span class="current-price text-lg font-bold text-primary-600">
+                                    {{ item.product.sale_price|money }}
+                                </span>
+                                <span class="original-price text-sm text-secondary-500 line-through">
+                                    {{ item.product.regular_price|money }}
+                                </span>
+                            </div>
+                            {% else %}
+                            <span class="current-price text-lg font-bold text-secondary-900">
+                                {{ item.product.price|money }}
+                            </span>
+                            {% endif %}
+                            
+                            <!-- Price Change Indicator -->
+                            {% if item.price_change %}
+                            <div class="price-change flex items-center space-x-1 mt-1">
+                                {% if item.price_change > 0 %}
+                                <i class="sicon-trending-up text-red-500 text-xs"></i>
+                                <span class="text-red-500 text-xs">+{{ item.price_change|money }}</span>
+                                {% else %}
+                                <i class="sicon-trending-down text-green-500 text-xs"></i>
+                                <span class="text-green-500 text-xs">{{ item.price_change|money }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Stock Status -->
+                        <div class="stock-status mb-3">
+                            {% if item.product.is_out_of_stock %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-600">
+                                <i class="sicon-close mr-1"></i>
+                                {{ 'Out of Stock'|t }}
+                            </span>
+                            {% elseif item.product.stock_quantity and item.product.stock_quantity <= 5 %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-600">
+                                <i class="sicon-alert-triangle mr-1"></i>
+                                {{ 'Only %d left'|t|format(item.product.stock_quantity) }}
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
+                                <i class="sicon-check mr-1"></i>
+                                {{ 'In Stock'|t }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Added Date -->
+                        <div class="added-date text-xs text-secondary-500 mb-3">
+                            {{ 'Added %s'|t|format(item.created_at|time_ago) }}
+                        </div>
+                        
+                        <!-- Item Actions -->
+                        <div class="item-actions flex space-x-2">
+                            {% if item.product.type == 'simple' and not item.product.is_out_of_stock %}
+                            <button class="btn btn-primary flex-1 py-2 text-sm add-to-cart-btn"
+                                    data-product-id="{{ item.product.id }}">
+                                <i class="sicon-cart mr-1"></i>
+                                {{ 'Add to Cart'|t }}
+                            </button>
+                            {% else %}
+                            <a href="{{ item.product.url }}" 
+                               class="btn btn-outline flex-1 py-2 text-sm text-center">
+                                {% if item.product.is_out_of_stock %}
+                                    {{ 'View Details'|t }}
+                                {% else %}
+                                    {{ 'Select Options'|t }}
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                            
+                            <button class="btn btn-ghost p-2 text-red-600 hover:text-red-700 remove-item-btn"
+                                    data-item-id="{{ item.id }}"
+                                    title="{{ 'Remove from wishlist'|t }}">
+                                <i class="sicon-trash"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Move to Collection -->
+                        {% if wishlist.collections|length > 0 %}
+                        <div class="move-to-collection mt-3">
+                            <select class="w-full text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                    data-move-to-collection="{{ item.id }}">
+                                <option value="">{{ 'Move to collection...'|t }}</option>
+                                {% for collection in wishlist.collections %}
+                                <option value="{{ collection.id }}" {{ item.collection_id == collection.id ? 'selected' : '' }}>
+                                    {{ collection.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Wishlist Analytics -->
+        {% if wishlist.analytics %}
+        <div class="wishlist-analytics p-6 border-t border-secondary-200 bg-secondary-50">
+            <h4 class="font-semibold text-secondary-900 mb-4">{{ 'Wishlist Insights'|t }}</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="insight-card bg-white p-4 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="sicon-trending-down text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-secondary-600">{{ 'Total Savings'|t }}</div>
+                            <div class="text-lg font-bold text-secondary-900">
+                                {{ wishlist.analytics.total_savings|money }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-card bg-white p-4 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="sicon-shopping-bag text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-secondary-600">{{ 'Purchased from Wishlist'|t }}</div>
+                            <div class="text-lg font-bold text-secondary-900">
+                                {{ wishlist.analytics.purchased_count }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-card bg-white p-4 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="sicon-clock text-purple-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-secondary-600">{{ 'Average Time to Purchase'|t }}</div>
+                            <div class="text-lg font-bold text-secondary-900">
+                                {{ wishlist.analytics.avg_time_to_purchase }} {{ 'days'|t }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        
+        <!-- Empty Wishlist State -->
+        <div class="empty-wishlist flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div class="empty-icon w-24 h-24 bg-secondary-100 rounded-full flex items-center justify-center mb-6">
+                <i class="sicon-heart text-4xl text-secondary-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-secondary-900 mb-3">
+                {{ 'Your wishlist is empty'|t }}
+            </h3>
+            <p class="text-secondary-600 mb-6 max-w-md">
+                {{ 'Save products you love to your wishlist. You can share it with friends and family too!'|t }}
+            </p>
+            <a href="{{ store.url('products.index') }}" 
+               class="btn btn-primary flex items-center space-x-2">
+                <i class="sicon-grid"></i>
+                <span>{{ 'Start Shopping'|t }}</span>
+            </a>
+        </div>
+        
+        {% endif %}
+    </div>
+</div>
+
+<!-- Create Collection Modal -->
+<div class="create-collection-modal fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+     id="createCollectionModal">
+    <div class="modal-content bg-white rounded-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-secondary-900 mb-4">{{ 'Create New Collection'|t }}</h3>
+        <form data-create-collection-form>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-secondary-700 mb-2">
+                    {{ 'Collection Name'|t }}
+                </label>
+                <input type="text" 
+                       name="name"
+                       class="w-full px-3 py-2 border border-secondary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                       placeholder="{{ 'e.g., Holiday Gifts, Summer Favorites'|t }}"
+                       required>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-secondary-700 mb-2">
+                    {{ 'Description (Optional)'|t }}
+                </label>
+                <textarea name="description"
+                          rows="3"
+                          class="w-full px-3 py-2 border border-secondary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder="{{ 'Describe this collection...'|t }}"></textarea>
+            </div>
+            <div class="flex space-x-3">
+                <button type="button" 
+                        class="btn btn-outline flex-1"
+                        data-close-modal>
+                    {{ 'Cancel'|t }}
+                </button>
+                <button type="submit" 
+                        class="btn btn-primary flex-1">
+                    {{ 'Create Collection'|t }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Enhanced Wishlist Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const wishlistComponent = document.querySelector('[data-component="enhanced-wishlist"]');
+    if (!wishlistComponent) return;
+    
+    const itemsContainer = document.querySelector('[data-items-container]');
+    const searchInput = document.querySelector('[data-wishlist-search]');
+    const priceFilter = document.querySelector('[data-price-filter]');
+    const availabilityFilter = document.querySelector('[data-availability-filter]');
+    const sortSelect = document.querySelector('[data-sort-wishlist]');
+    const viewModeButtons = document.querySelectorAll('[data-view-mode]');
+    const collectionTabs = document.querySelectorAll('.collection-tab');
+    const createCollectionBtn = document.querySelector('[data-create-collection]');
+    const shareWishlistBtn = document.querySelector('[data-share-wishlist]');
+    
+    let selectedItems = new Set();
+    let currentFilters = {
+        search: '',
+        price: '',
+        availability: '',
+        sort: 'newest',
+        collection: 'all'
+    };
+    
+    // Search functionality
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentFilters.search = this.value.toLowerCase();
+                filterItems();
+            }, 300);
+        });
+    }
+    
+    // Filter functionality
+    [priceFilter, availabilityFilter, sortSelect].forEach(filter => {
+        if (filter) {
+            filter.addEventListener('change', function() {
+                const filterType = this.dataset.priceFilter ? 'price' : 
+                                 this.dataset.availabilityFilter ? 'availability' : 'sort';
+                currentFilters[filterType] = this.value;
+                filterItems();
+            });
+        }
+    });
+    
+    // Collection tabs
+    collectionTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            collectionTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentFilters.collection = this.dataset.collection;
+            filterItems();
+        });
+    });
+    
+    // View mode toggle
+    viewModeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            viewModeButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const viewMode = this.dataset.viewMode;
+            if (viewMode === 'list') {
+                itemsContainer.classList.remove('grid-view', 'grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4');
+                itemsContainer.classList.add('list-view', 'space-y-4');
+            } else {
+                itemsContainer.classList.remove('list-view', 'space-y-4');
+                itemsContainer.classList.add('grid-view', 'grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4');
+            }
+        });
+    });
+    
+    // Item selection
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('item-checkbox')) {
+            const itemId = e.target.dataset.itemId;
+            const isChecked = e.target.checked;
+            
+            if (isChecked) {
+                selectedItems.add(itemId);
+            } else {
+                selectedItems.delete(itemId);
+            }
+            
+            updateSelectionUI();
+        }
+    });
+    
+    // Add to cart from wishlist
+    document.addEventListener('click', async function(e) {
+        const addToCartBtn = e.target.closest('.add-to-cart-btn');
+        if (!addToCartBtn) return;
+        
+        const productId = addToCartBtn.dataset.productId;
+        await addToCart(productId);
+    });
+    
+    // Remove from wishlist
+    document.addEventListener('click', async function(e) {
+        const removeBtn = e.target.closest('.remove-item-btn');
+        if (!removeBtn) return;
+        
+        if (confirm('{{ "Remove this item from your wishlist?"|t }}')) {
+            const itemId = removeBtn.dataset.itemId;
+            await removeFromWishlist(itemId);
+        }
+    });
+    
+    // Move to collection
+    document.addEventListener('change', async function(e) {
+        const moveSelect = e.target.closest('[data-move-to-collection]');
+        if (!moveSelect) return;
+        
+        const itemId = moveSelect.dataset.moveToCollection;
+        const collectionId = moveSelect.value;
+        
+        if (collectionId) {
+            await moveToCollection(itemId, collectionId);
+        }
+    });
+    
+    // Create collection
+    if (createCollectionBtn) {
+        createCollectionBtn.addEventListener('click', function() {
+            document.getElementById('createCollectionModal').classList.remove('hidden');
+        });
+    }
+    
+    // Share wishlist
+    if (shareWishlistBtn) {
+        shareWishlistBtn.addEventListener('click', function() {
+            shareWishlist();
+        });
+    }
+    
+    // Bulk actions
+    document.addEventListener('click', async function(e) {
+        if (e.target.closest('[data-bulk-add-to-cart]')) {
+            await bulkAddToCart();
+        } else if (e.target.closest('[data-bulk-remove]')) {
+            if (confirm('{{ "Remove selected items from your wishlist?"|t }}')) {
+                await bulkRemove();
+            }
+        } else if (e.target.closest('[data-clear-selection]')) {
+            clearSelection();
+        }
+    });
+    
+    function filterItems() {
+        const items = document.querySelectorAll('.wishlist-item');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            let visible = true;
+            
+            // Search filter
+            if (currentFilters.search) {
+                const name = item.querySelector('.product-name').textContent.toLowerCase();
+                if (!name.includes(currentFilters.search)) {
+                    visible = false;
+                }
+            }
+            
+            // Price filter
+            if (currentFilters.price) {
+                const price = parseFloat(item.dataset.price);
+                const [min, max] = currentFilters.price.split('-').map(p => p === '+' ? Infinity : parseFloat(p.replace('+', '')));
+                if (price < min || (max !== undefined && price > max)) {
+                    visible = false;
+                }
+            }
+            
+            // Availability filter
+            if (currentFilters.availability) {
+                // Implementation depends on data attributes
+                // This is a simplified version
+                const hasClass = item.classList.contains(currentFilters.availability);
+                if (!hasClass) {
+                    visible = false;
+                }
+            }
+            
+            // Collection filter
+            if (currentFilters.collection !== 'all') {
+                const itemCollection = item.dataset.collection;
+                if (itemCollection !== currentFilters.collection) {
+                    visible = false;
+                }
+            }
+            
+            item.style.display = visible ? 'block' : 'none';
+            if (visible) visibleCount++;
+        });
+        
+        // Sort visible items
+        if (currentFilters.sort) {
+            sortItems();
+        }
+        
+        // Update UI
+        console.log(`Showing ${visibleCount} items`);
+    }
+    
+    function sortItems() {
+        const container = itemsContainer;
+        const items = Array.from(container.children).filter(item => item.style.display !== 'none');
+        
+        items.sort((a, b) => {
+            switch (currentFilters.sort) {
+                case 'price_low':
+                    return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                case 'price_high':
+                    return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                case 'name':
+                    return a.querySelector('.product-name').textContent.localeCompare(b.querySelector('.product-name').textContent);
+                case 'oldest':
+                    return parseInt(a.dataset.itemId) - parseInt(b.dataset.itemId);
+                default: // newest
+                    return parseInt(b.dataset.itemId) - parseInt(a.dataset.itemId);
+            }
+        });
+        
+        items.forEach(item => container.appendChild(item));
+    }
+    
+    function updateSelectionUI() {
+        const bulkActions = document.querySelector('[data-bulk-actions]');
+        const selectedInfo = document.querySelector('[data-selected-info]');
+        const selectedCount = document.querySelector('[data-selected-count]');
+        
+        if (selectedItems.size > 0) {
+            bulkActions.classList.remove('hidden');
+            selectedInfo.classList.remove('hidden');
+            selectedCount.textContent = selectedItems.size;
+        } else {
+            bulkActions.classList.add('hidden');
+            selectedInfo.classList.add('hidden');
+        }
+        
+        // Update checkbox styles
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            const customCheckbox = checkbox.nextElementSibling;
+            const isChecked = selectedItems.has(checkbox.dataset.itemId);
+            
+            checkbox.checked = isChecked;
+            
+            if (isChecked) {
+                customCheckbox.classList.add('bg-primary-600', 'border-primary-600');
+                customCheckbox.querySelector('i').classList.remove('hidden');
+            } else {
+                customCheckbox.classList.remove('bg-primary-600', 'border-primary-600');
+                customCheckbox.querySelector('i').classList.add('hidden');
+            }
+        });
+    }
+    
+    function clearSelection() {
+        selectedItems.clear();
+        updateSelectionUI();
+    }
+    
+    async function addToCart(productId) {
+        try {
+            const response = await fetch(`{{ store.url('cart.add') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: 1
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('{{ "Product added to cart"|t }}', 'success');
+                updateHeaderCartCount(data.cart_count);
+            } else {
+                showNotification(data.message || '{{ "Failed to add to cart"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Add to cart error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function removeFromWishlist(itemId) {
+        try {
+            const response = await fetch(`{{ store.url('wishlist.remove') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    item_id: itemId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+                if (itemElement) {
+                    itemElement.remove();
+                }
+                showNotification('{{ "Item removed from wishlist"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to remove item"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Remove from wishlist error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function moveToCollection(itemId, collectionId) {
+        try {
+            const response = await fetch(`{{ store.url('wishlist.move') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    collection_id: collectionId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('{{ "Item moved to collection"|t }}', 'success');
+                // Update item's collection data attribute
+                const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+                if (itemElement) {
+                    itemElement.dataset.collection = collectionId;
+                }
+            } else {
+                showNotification(data.message || '{{ "Failed to move item"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Move to collection error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function bulkAddToCart() {
+        const productIds = Array.from(selectedItems).map(itemId => {
+            const item = document.querySelector(`[data-item-id="${itemId}"]`);
+            return item ? item.dataset.productId : null;
+        }).filter(Boolean);
+        
+        try {
+            const response = await fetch(`{{ store.url('cart.add-multiple') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    products: productIds.map(id => ({ product_id: id, quantity: 1 }))
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(`{{ "${count} items added to cart"|t }}`.replace('${count}', data.added_count), 'success');
+                updateHeaderCartCount(data.cart_count);
+                clearSelection();
+            } else {
+                showNotification(data.message || '{{ "Failed to add items to cart"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Bulk add to cart error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function bulkRemove() {
+        try {
+            const response = await fetch(`{{ store.url('wishlist.remove-multiple') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    item_ids: Array.from(selectedItems)
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                selectedItems.forEach(itemId => {
+                    const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+                    if (itemElement) {
+                        itemElement.remove();
+                    }
+                });
+                clearSelection();
+                showNotification('{{ "Selected items removed from wishlist"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to remove items"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Bulk remove error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    function shareWishlist() {
+        const shareUrl = `{{ store.url('wishlist.public') }}/${wishlistComponent.dataset.shareId || 'public'}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ "Check out my wishlist"|t }}',
+                text: '{{ "See what I\'m hoping to get!"|t }}',
+                url: shareUrl
+            });
+        } else {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showNotification('{{ "Wishlist link copied to clipboard"|t }}', 'success');
+            });
+        }
+    }
+    
+    function updateHeaderCartCount(count) {
+        const headerCartCount = document.querySelector('.header-actions .badge');
+        if (headerCartCount) {
+            headerCartCount.textContent = count;
+            headerCartCount.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: '{{ store.direction == "rtl" ? "top-left" : "top-right" }}',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else {
+            alert(message);
+        }
+    }
+    
+    // Modal functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-close-modal]') || e.target.id === 'createCollectionModal') {
+            document.getElementById('createCollectionModal').classList.add('hidden');
+        }
+    });
+    
+    // Create collection form
+    const createCollectionForm = document.querySelector('[data-create-collection-form]');
+    if (createCollectionForm) {
+        createCollectionForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch(`{{ store.url('wishlist.collections.create') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('{{ "Collection created successfully"|t }}', 'success');
+                    document.getElementById('createCollectionModal').classList.add('hidden');
+                    location.reload(); // Refresh to show new collection
+                } else {
+                    showNotification(data.message || '{{ "Failed to create collection"|t }}', 'error');
+                }
+            } catch (error) {
+                console.error('Create collection error:', error);
+                showNotification('{{ "An error occurred"|t }}', 'error');
+            }
+        });
+    }
+});
+</script>
