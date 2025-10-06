@@ -1,4 +1,4 @@
-const { tailwindPreset } = require('@salla.sa/twilight-tailwind-theme');
+const tailwindPreset = require('@salla.sa/twilight-tailwind-theme');
 
 module.exports = {
   presets: [tailwindPreset],
@@ -105,7 +105,6 @@ module.exports = {
     }
   },
   plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/line-clamp')
+    require('@tailwindcss/forms')
   ]
 };

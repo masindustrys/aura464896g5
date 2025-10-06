@@ -1,0 +1,265 @@
+{#
+Custom Testimonials Component
+Display customer reviews and testimonials
+#}
+
+{% if component.items and component.items|length > 0 %}
+<section class="testimonials-section py-16 bg-gradient-to-br from-primary-50 to-secondary-50" data-animation="slide-up">
+    <div class="container mx-auto px-4">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+            <h2 class="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
+                {{ component.title|default(trans('testimonials.title')) }}
+            </h2>
+            <p class="text-lg text-secondary-600 max-w-2xl mx-auto">
+                {{ component.description|default(trans('testimonials.description')) }}
+            </p>
+        </div>
+        
+        <!-- Testimonials Slider -->
+        <div class="testimonials-slider relative" data-animation="fade-in">
+            <div class="slider-container overflow-hidden">
+                <div class="slider-track flex transition-transform duration-500 ease-out">
+                    {% for testimonial in component.items %}
+                    <div class="testimonial-slide flex-none w-full md:w-1/2 lg:w-1/3 px-4">
+                        <div class="testimonial-item bg-white rounded-xl p-8 text-center border border-secondary-200 
+                                    shadow-soft hover:shadow-medium transition-all duration-300 group h-full">
+                            <!-- Quote Icon -->
+                            <div class="text-primary-600 mb-6">
+                                <i class="sicon-quote text-4xl opacity-20"></i>
+                            </div>
+                            
+                            <!-- Rating Stars -->
+                            {% if testimonial.stars %}
+                            <div class="testimonial-rating flex justify-center space-x-1 mb-6">
+                                {% for i in 1..5 %}
+                                <i class="star sicon-star {{ i <= testimonial.stars ? 'text-yellow-400' : 'text-secondary-300' }} text-lg"></i>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Testimonial Text -->
+                            <blockquote class="testimonial-text text-secondary-700 mb-6 text-lg leading-relaxed italic">
+                                "{{ testimonial.text }}"
+                            </blockquote>
+                            
+                            <!-- Customer Info -->
+                            <div class="testimonial-author">
+                                <div class="flex items-center justify-center space-x-4">
+                                    <!-- Avatar -->
+                                    <div class="author-avatar">
+                                        {% if testimonial.avatar %}
+                                        <img src="{{ testimonial.avatar }}" 
+                                             alt="{{ testimonial.name }}"
+                                             class="w-16 h-16 rounded-full object-cover border-2 border-primary-200 
+                                                    group-hover:border-primary-300 transition-colors">
+                                        {% else %}
+                                        <div class="w-16 h-16 rounded-full bg-primary-100 text-primary-600 
+                                                    flex items-center justify-center text-xl font-bold">
+                                            {{ testimonial.name|first|upper }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Name and Details -->
+                                    <div class="author-info text-left">
+                                        <h4 class="author-name font-semibold text-secondary-900 text-lg">
+                                            {{ testimonial.name }}
+                                        </h4>
+                                        {% if testimonial.title %}
+                                        <p class="author-title text-sm text-secondary-500">
+                                            {{ testimonial.title }}
+                                        </p>
+                                        {% endif %}
+                                        {% if testimonial.location %}
+                                        <p class="author-location text-xs text-secondary-400 flex items-center">
+                                            <i class="sicon-location text-xs mr-1"></i>
+                                            {{ testimonial.location }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Verified Badge (Optional) -->
+                                {% if testimonial.verified|default(true) %}
+                                <div class="mt-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                                 bg-green-100 text-green-800">
+                                        <i class="sicon-shield-check mr-1"></i>
+                                        {{ trans('testimonials.verified_purchase') }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Date (Optional) -->
+                            {% if testimonial.date %}
+                            <div class="mt-4 text-xs text-secondary-400">
+                                {{ testimonial.date|date('M d, Y') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Navigation Controls -->
+            {% if component.items|length > 3 %}
+            <div class="slider-navigation flex justify-center mt-8 space-x-4">
+                <!-- Previous Button -->
+                <button class="testimonials-prev w-12 h-12 bg-white border border-secondary-200 
+                               hover:bg-primary-600 hover:border-primary-600 hover:text-white 
+                               text-secondary-600 rounded-full flex items-center justify-center 
+                               transition-all duration-200 disabled:opacity-50 shadow-sm"
+                        aria-label="{{ trans('common.previous') }}">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'right' : 'left' }}"></i>
+                </button>
+                
+                <!-- Next Button -->
+                <button class="testimonials-next w-12 h-12 bg-white border border-secondary-200 
+                               hover:bg-primary-600 hover:border-primary-600 hover:text-white 
+                               text-secondary-600 rounded-full flex items-center justify-center 
+                               transition-all duration-200 disabled:opacity-50 shadow-sm"
+                        aria-label="{{ trans('common.next') }}">
+                    <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }}"></i>
+                </button>
+            </div>
+            
+            <!-- Dots Indicators -->
+            <div class="flex justify-center mt-6 space-x-2">
+                {% set total_slides = (component.items|length / 3)|round(0, 'ceil') %}
+                {% for i in 1..total_slides %}
+                <button class="w-3 h-3 rounded-full bg-secondary-300 hover:bg-primary-400 
+                               transition-colors duration-200 {{ loop.first ? 'bg-primary-600' : '' }}"
+                        data-slide="{{ loop.index0 }}"
+                        aria-label="{{ trans('common.go_to_slide') }} {{ loop.index }}">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- CTA Section -->
+        {% if component.show_cta|default(true) %}
+        <div class="text-center mt-12">
+            <p class="text-secondary-600 mb-6">
+                {{ trans('testimonials.share_experience')|default('Share your experience with us!') }}
+            </p>
+            <a href="{{ component.review_url|default('#') }}" 
+               class="btn btn-primary inline-flex items-center space-x-2 group">
+                <i class="sicon-edit"></i>
+                <span>{{ trans('product.write_review') }}</span>
+                <i class="sicon-arrow-{{ store.direction == 'rtl' ? 'left' : 'right' }} group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Trust Indicators -->
+<div class="bg-white py-8 border-t border-secondary-200">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="trust-indicator">
+                <div class="text-3xl font-bold text-primary-600 mb-2">{{ store.total_customers|default('10,000+') }}</div>
+                <p class="text-sm text-secondary-600">Happy Customers</p>
+            </div>
+            <div class="trust-indicator">
+                <div class="text-3xl font-bold text-primary-600 mb-2">{{ store.total_orders|default('50,000+') }}</div>
+                <p class="text-sm text-secondary-600">Orders Delivered</p>
+            </div>
+            <div class="trust-indicator">
+                <div class="text-3xl font-bold text-primary-600 mb-2">4.9</div>
+                <p class="text-sm text-secondary-600">Average Rating</p>
+            </div>
+            <div class="trust-indicator">
+                <div class="text-3xl font-bold text-primary-600 mb-2">99%</div>
+                <p class="text-sm text-secondary-600">Satisfaction Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schema Markup for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Customer Reviews",
+    "description": "Customer testimonials and reviews",
+    "numberOfItems": {{ component.items|length }},
+    "itemListElement": [
+        {% for testimonial in component.items %}
+        {
+            "@type": "ListItem",
+            "position": {{ loop.index }},
+            "item": {
+                "@type": "Review",
+                "author": {
+                    "@type": "Person",
+                    "name": "{{ testimonial.name }}"
+                },
+                "reviewBody": "{{ testimonial.text }}",
+                "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": {{ testimonial.stars|default(5) }},
+                    "bestRating": 5
+                },
+                "datePublished": "{{ testimonial.date|default('now')|date('Y-m-d') }}"
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+
+<!-- Additional CSS for Testimonials -->
+<style>
+.testimonials-slider .testimonial-item {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s ease;
+}
+
+.testimonials-slider .testimonial-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-text::before {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-600), var(--accent-500));
+    margin: 0 auto 1rem;
+}
+
+/* Auto-play animation */
+@keyframes testimonialPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.testimonial-rating .star {
+    animation: testimonialPulse 2s ease-in-out infinite;
+    animation-delay: calc(var(--star-index) * 0.1s);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .testimonial-slide {
+        width: 100%;
+        padding: 0 1rem;
+    }
+    
+    .testimonial-item {
+        padding: 1.5rem;
+    }
+    
+    .testimonial-text {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endif %}

@@ -1,0 +1,666 @@
+{#
+  Advanced Product Reviews Component
+  Modern reviews system with filtering, sorting, and detailed analytics
+#}
+
+<div class="product-reviews bg-white rounded-xl border border-secondary-200 overflow-hidden"
+     data-component="product-reviews"
+     data-product-id="{{ product.id }}">
+     
+    <!-- Reviews Header -->
+    <div class="reviews-header p-6 border-b border-secondary-200">
+        <div class="flex items-start justify-between">
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-secondary-900 mb-2">
+                    {{ 'Customer Reviews'|t }}
+                </h3>
+                <p class="text-sm text-secondary-600">
+                    {{ 'Based on %d reviews'|t|format(product.reviews_count|default(0)) }}
+                </p>
+            </div>
+            
+            <button class="btn btn-primary btn-sm flex items-center space-x-2" 
+                    data-write-review>
+                <i class="sicon-edit"></i>
+                <span>{{ 'Write Review'|t }}</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Reviews Summary -->
+    <div class="reviews-summary p-6 bg-secondary-50 border-b border-secondary-200">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Overall Rating -->
+            <div class="overall-rating text-center lg:text-left">
+                <div class="flex items-center justify-center lg:justify-start space-x-3 mb-3">
+                    <span class="overall-score text-4xl font-bold text-secondary-900">
+                        {{ product.average_rating|number_format(1) }}
+                    </span>
+                    <div>
+                        <div class="stars flex items-center space-x-1 mb-1">
+                            {% for i in 1..5 %}
+                            <i class="w-5 h-5 {{ i <= product.average_rating ? 'text-yellow-400 sicon-star-filled' : 'text-secondary-300 sicon-star' }}"></i>
+                            {% endfor %}
+                        </div>
+                        <div class="text-sm text-secondary-600">
+                            {{ 'out of 5 stars'|t }}
+                        </div>
+                    </div>
+                </div>
+                <div class="text-sm text-secondary-600">
+                    {{ '%d verified purchases'|t|format(product.verified_reviews_count|default(0)) }}
+                </div>
+            </div>
+            
+            <!-- Rating Breakdown -->
+            <div class="rating-breakdown">
+                <h4 class="font-semibold text-secondary-900 mb-3">{{ 'Rating Breakdown'|t }}</h4>
+                <div class="space-y-2">
+                    {% for star in 5..1 %}
+                    {% set count = product.ratings_breakdown[star]|default(0) %}
+                    {% set percentage = product.reviews_count > 0 ? (count / product.reviews_count * 100)|round : 0 %}
+                    <div class="rating-bar flex items-center space-x-3">
+                        <div class="flex items-center space-x-1 w-16">
+                            <span class="text-sm text-secondary-700">{{ star }}</span>
+                            <i class="sicon-star-filled text-yellow-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 bg-secondary-200 rounded-full h-2">
+                            <div class="bg-yellow-400 h-2 rounded-full transition-all duration-500" 
+                                 style="width: {{ percentage }}%"></div>
+                        </div>
+                        <span class="text-sm text-secondary-600 w-12 text-right">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Review Highlights -->
+            <div class="review-highlights">
+                <h4 class="font-semibold text-secondary-900 mb-3">{{ 'Review Highlights'|t }}</h4>
+                <div class="space-y-2">
+                    {% if product.positive_keywords %}
+                    <div class="highlight-item">
+                        <div class="text-sm text-secondary-700 mb-1">{{ 'Most Mentioned Positive'|t }}</div>
+                        <div class="flex flex-wrap gap-1">
+                            {% for keyword in product.positive_keywords|slice(0, 3) %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                <i class="sicon-thumbs-up mr-1"></i>
+                                {{ keyword.text }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if product.negative_keywords %}
+                    <div class="highlight-item">
+                        <div class="text-sm text-secondary-700 mb-1">{{ 'Areas for Improvement'|t }}</div>
+                        <div class="flex flex-wrap gap-1">
+                            {% for keyword in product.negative_keywords|slice(0, 2) %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
+                                <i class="sicon-thumbs-down mr-1"></i>
+                                {{ keyword.text }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews Filters and Sort -->
+    <div class="reviews-controls p-4 bg-white border-b border-secondary-200">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+            
+            <!-- Filters -->
+            <div class="filters flex flex-wrap items-center gap-3">
+                <div class="filter-group">
+                    <label class="text-xs text-secondary-600">{{ 'Filter by rating'|t }}</label>
+                    <select class="rating-filter text-sm border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            data-rating-filter>
+                        <option value="">{{ 'All ratings'|t }}</option>
+                        <option value="5">5 {{ 'stars'|t }}</option>
+                        <option value="4">4 {{ 'stars'|t }}</option>
+                        <option value="3">3 {{ 'stars'|t }}</option>
+                        <option value="2">2 {{ 'stars'|t }}</option>
+                        <option value="1">1 {{ 'star'|t }}</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="text-xs text-secondary-600">{{ 'Filter by type'|t }}</label>
+                    <select class="type-filter text-sm border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            data-type-filter>
+                        <option value="">{{ 'All reviews'|t }}</option>
+                        <option value="verified">{{ 'Verified purchases'|t }}</option>
+                        <option value="with_photos">{{ 'With photos'|t }}</option>
+                        <option value="with_videos">{{ 'With videos'|t }}</option>
+                    </select>
+                </div>
+                
+                <button class="clear-filters text-xs text-red-600 hover:text-red-700 transition-colors"
+                        data-clear-filters>
+                    {{ 'Clear filters'|t }}
+                </button>
+            </div>
+            
+            <!-- Sort Options -->
+            <div class="sort-options">
+                <select class="sort-select text-sm border border-secondary-200 rounded px-3 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        data-sort-reviews>
+                    <option value="newest">{{ 'Newest first'|t }}</option>
+                    <option value="oldest">{{ 'Oldest first'|t }}</option>
+                    <option value="highest">{{ 'Highest rating'|t }}</option>
+                    <option value="lowest">{{ 'Lowest rating'|t }}</option>
+                    <option value="helpful">{{ 'Most helpful'|t }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews List -->
+    <div class="reviews-list" data-reviews-list>
+        {% if product.reviews|length > 0 %}
+        
+        <div class="reviews-container" data-reviews-container>
+            {% for review in product.reviews %}
+            <div class="review-item p-6 border-b border-secondary-200 last:border-b-0"
+                 data-review-id="{{ review.id }}"
+                 data-rating="{{ review.rating }}"
+                 data-verified="{{ review.is_verified ? 'true' : 'false' }}">
+                 
+                <!-- Review Header -->
+                <div class="review-header flex items-start justify-between mb-3">
+                    <div class="reviewer-info flex items-center space-x-3">
+                        <!-- Reviewer Avatar -->
+                        <div class="reviewer-avatar w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center overflow-hidden">
+                            {% if review.user.avatar %}
+                            <img src="{{ review.user.avatar }}" 
+                                 alt="{{ review.user.name }}"
+                                 class="w-full h-full object-cover">
+                            {% else %}
+                            <span class="text-primary-600 font-medium">
+                                {{ review.user.name|slice(0, 1)|upper }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Reviewer Details -->
+                        <div>
+                            <div class="reviewer-name flex items-center space-x-2">
+                                <span class="font-medium text-secondary-900">{{ review.user.name }}</span>
+                                {% if review.is_verified %}
+                                <span class="verified-badge inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                    <i class="sicon-shield-check mr-1"></i>
+                                    {{ 'Verified Purchase'|t }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="review-meta flex items-center space-x-3 text-xs text-secondary-500 mt-1">
+                                <span>{{ review.created_at|date('M j, Y') }}</span>
+                                {% if review.variant_info %}
+                                <span>{{ review.variant_info }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Review Rating -->
+                    <div class="review-rating flex items-center space-x-1">
+                        {% for i in 1..5 %}
+                        <i class="w-4 h-4 {{ i <= review.rating ? 'text-yellow-400 sicon-star-filled' : 'text-secondary-300 sicon-star' }}"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Review Title -->
+                {% if review.title %}
+                <h4 class="review-title font-semibold text-secondary-900 mb-2">
+                    {{ review.title }}
+                </h4>
+                {% endif %}
+                
+                <!-- Review Content -->
+                <div class="review-content text-secondary-700 leading-relaxed mb-4">
+                    <p class="review-text" data-full-text="{{ review.content }}">
+                        {{ review.content|length > 300 ? review.content|slice(0, 300) ~ '...' : review.content }}
+                    </p>
+                    {% if review.content|length > 300 %}
+                    <button class="read-more text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
+                            data-read-more>
+                        {{ 'Read more'|t }}
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <!-- Review Media -->
+                {% if review.images or review.videos %}
+                <div class="review-media mb-4">
+                    <div class="media-grid grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                        {% for image in review.images|slice(0, 6) %}
+                        <div class="media-item aspect-square rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+                             data-lightbox="review-{{ review.id }}"
+                             data-src="{{ image.url }}">
+                            <img src="{{ image.thumbnail }}" 
+                                 alt="{{ 'Review image'|t }}"
+                                 class="w-full h-full object-cover">
+                        </div>
+                        {% endfor %}
+                        
+                        {% for video in review.videos|slice(0, 2) %}
+                        <div class="media-item aspect-square rounded-lg overflow-hidden cursor-pointer relative"
+                             data-video="{{ video.url }}">
+                            <img src="{{ video.thumbnail }}" 
+                                 alt="{{ 'Review video'|t }}"
+                                 class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <i class="sicon-play text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Review Actions -->
+                <div class="review-actions flex items-center justify-between">
+                    <div class="helpful-actions flex items-center space-x-4">
+                        <span class="text-sm text-secondary-600">{{ 'Was this helpful?'|t }}</span>
+                        
+                        <div class="helpful-buttons flex items-center space-x-2">
+                            <button class="helpful-btn flex items-center space-x-1 px-3 py-1 text-sm border border-secondary-200 rounded-full hover:bg-secondary-50 transition-colors {{ review.user_found_helpful ? 'bg-green-50 border-green-200 text-green-700' : 'text-secondary-600' }}"
+                                    data-helpful="yes"
+                                    data-review-id="{{ review.id }}">
+                                <i class="sicon-thumbs-up text-xs"></i>
+                                <span>{{ 'Yes'|t }}</span>
+                                <span class="helpful-count">{{ review.helpful_count }}</span>
+                            </button>
+                            
+                            <button class="helpful-btn flex items-center space-x-1 px-3 py-1 text-sm border border-secondary-200 rounded-full hover:bg-secondary-50 transition-colors {{ review.user_found_unhelpful ? 'bg-red-50 border-red-200 text-red-700' : 'text-secondary-600' }}"
+                                    data-helpful="no"
+                                    data-review-id="{{ review.id }}">
+                                <i class="sicon-thumbs-down text-xs"></i>
+                                <span>{{ 'No'|t }}</span>
+                                <span class="unhelpful-count">{{ review.unhelpful_count }}</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="review-meta-actions flex items-center space-x-3">
+                        <button class="report-review text-xs text-secondary-500 hover:text-red-600 transition-colors"
+                                data-report-review="{{ review.id }}">
+                            {{ 'Report'|t }}
+                        </button>
+                        
+                        <button class="share-review text-xs text-secondary-500 hover:text-primary-600 transition-colors"
+                                data-share-review="{{ review.id }}">
+                            {{ 'Share'|t }}
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Store Response -->
+                {% if review.store_response %}
+                <div class="store-response mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start space-x-3">
+                        <div class="store-avatar w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="sicon-store text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="store-info flex items-center space-x-2 mb-2">
+                                <span class="font-medium text-blue-900">{{ store.name }}</span>
+                                <span class="text-xs text-blue-600">{{ 'Store Response'|t }}</span>
+                                <span class="text-xs text-blue-500">{{ review.store_response.created_at|date('M j, Y') }}</span>
+                            </div>
+                            <p class="text-blue-800 text-sm leading-relaxed">
+                                {{ review.store_response.content }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Load More Reviews -->
+        {% if product.has_more_reviews %}
+        <div class="load-more-container p-6 text-center border-t border-secondary-200">
+            <button class="btn btn-outline flex items-center space-x-2 mx-auto"
+                    data-load-more-reviews>
+                <span>{{ 'Load More Reviews'|t }}</span>
+                <i class="sicon-arrow-down"></i>
+            </button>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        
+        <!-- No Reviews State -->
+        <div class="no-reviews flex flex-col items-center justify-center py-12 px-6 text-center">
+            <div class="no-reviews-icon w-20 h-20 bg-secondary-100 rounded-full flex items-center justify-center mb-4">
+                <i class="sicon-message-circle text-3xl text-secondary-400"></i>
+            </div>
+            <h4 class="text-lg font-semibold text-secondary-900 mb-2">
+                {{ 'No reviews yet'|t }}
+            </h4>
+            <p class="text-secondary-600 mb-6 max-w-md">
+                {{ 'Be the first to share your thoughts about this product with other customers.'|t }}
+            </p>
+            <button class="btn btn-primary flex items-center space-x-2"
+                    data-write-review>
+                <i class="sicon-edit"></i>
+                <span>{{ 'Write the First Review'|t }}</span>
+            </button>
+        </div>
+        
+        {% endif %}
+    </div>
+    
+    <!-- Loading State -->
+    <div class="reviews-loading hidden flex items-center justify-center py-8">
+        <div class="flex items-center space-x-3">
+            <div class="w-6 h-6 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+            <span class="text-sm text-secondary-600">{{ 'Loading reviews...'|t }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Write Review Modal (placeholder - would be implemented separately) -->
+<div class="write-review-modal fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+     id="writeReviewModal">
+    <!-- Modal content would go here -->
+</div>
+
+<script>
+// Advanced Product Reviews Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const reviewsComponent = document.querySelector('[data-component="product-reviews"]');
+    if (!reviewsComponent) return;
+    
+    const productId = reviewsComponent.dataset.productId;
+    const ratingFilter = document.querySelector('[data-rating-filter]');
+    const typeFilter = document.querySelector('[data-type-filter]');
+    const sortSelect = document.querySelector('[data-sort-reviews]');
+    const clearFilters = document.querySelector('[data-clear-filters]');
+    const loadMoreBtn = document.querySelector('[data-load-more-reviews]');
+    const reviewsContainer = document.querySelector('[data-reviews-container]');
+    const reviewsLoading = document.querySelector('.reviews-loading');
+    
+    let currentPage = 1;
+    let currentFilters = {
+        rating: '',
+        type: '',
+        sort: 'newest'
+    };
+    
+    // Filter and sort event listeners
+    if (ratingFilter) {
+        ratingFilter.addEventListener('change', function() {
+            currentFilters.rating = this.value;
+            loadReviews(true);
+        });
+    }
+    
+    if (typeFilter) {
+        typeFilter.addEventListener('change', function() {
+            currentFilters.type = this.value;
+            loadReviews(true);
+        });
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            currentFilters.sort = this.value;
+            loadReviews(true);
+        });
+    }
+    
+    if (clearFilters) {
+        clearFilters.addEventListener('click', function() {
+            ratingFilter.value = '';
+            typeFilter.value = '';
+            sortSelect.value = 'newest';
+            currentFilters = { rating: '', type: '', sort: 'newest' };
+            loadReviews(true);
+        });
+    }
+    
+    // Load more reviews
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            currentPage++;
+            loadReviews(false);
+        });
+    }
+    
+    // Helpful/unhelpful voting
+    document.addEventListener('click', async function(e) {
+        const helpfulBtn = e.target.closest('.helpful-btn');
+        if (!helpfulBtn) return;
+        
+        const reviewId = helpfulBtn.dataset.reviewId;
+        const helpful = helpfulBtn.dataset.helpful === 'yes';
+        
+        await voteHelpful(reviewId, helpful, helpfulBtn);
+    });
+    
+    // Read more functionality
+    document.addEventListener('click', function(e) {
+        const readMoreBtn = e.target.closest('[data-read-more]');
+        if (!readMoreBtn) return;
+        
+        const reviewText = readMoreBtn.previousElementSibling;
+        const fullText = reviewText.dataset.fullText;
+        
+        reviewText.textContent = fullText;
+        readMoreBtn.style.display = 'none';
+    });
+    
+    // Write review
+    document.addEventListener('click', function(e) {
+        const writeReviewBtn = e.target.closest('[data-write-review]');
+        if (!writeReviewBtn) return;
+        
+        // This would open the write review modal
+        // For now, redirect to review form page
+        window.location.href = `{{ store.url('product.review.create') }}?product_id=${productId}`;
+    });
+    
+    // Report review
+    document.addEventListener('click', async function(e) {
+        const reportBtn = e.target.closest('[data-report-review]');
+        if (!reportBtn) return;
+        
+        const reviewId = reportBtn.dataset.reportReview;
+        
+        if (confirm('{{ "Are you sure you want to report this review?"|t }}')) {
+            await reportReview(reviewId);
+        }
+    });
+    
+    // Share review
+    document.addEventListener('click', function(e) {
+        const shareBtn = e.target.closest('[data-share-review]');
+        if (!shareBtn) return;
+        
+        const reviewId = shareBtn.dataset.shareReview;
+        shareReview(reviewId);
+    });
+    
+    // Media lightbox
+    document.addEventListener('click', function(e) {
+        const mediaItem = e.target.closest('[data-lightbox]');
+        if (!mediaItem) return;
+        
+        const src = mediaItem.dataset.src;
+        if (window.fslightbox) {
+            window.fslightbox.open(src);
+        }
+    });
+    
+    // Video playback
+    document.addEventListener('click', function(e) {
+        const videoItem = e.target.closest('[data-video]');
+        if (!videoItem) return;
+        
+        const videoUrl = videoItem.dataset.video;
+        // Implement video playback modal
+        console.log('Play video:', videoUrl);
+    });
+    
+    async function loadReviews(reset = false) {
+        if (reset) {
+            currentPage = 1;
+            reviewsContainer.innerHTML = '';
+        }
+        
+        showLoading();
+        
+        try {
+            const params = new URLSearchParams({
+                product_id: productId,
+                page: currentPage,
+                rating: currentFilters.rating,
+                type: currentFilters.type,
+                sort: currentFilters.sort
+            });
+            
+            const response = await fetch(`{{ store.url('api.reviews.load') }}?${params}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                if (reset) {
+                    reviewsContainer.innerHTML = data.html;
+                } else {
+                    reviewsContainer.insertAdjacentHTML('beforeend', data.html);
+                }
+                
+                // Update load more button
+                if (loadMoreBtn) {
+                    loadMoreBtn.style.display = data.has_more ? 'block' : 'none';
+                }
+            } else {
+                showNotification(data.message || '{{ "Failed to load reviews"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Load reviews error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function voteHelpful(reviewId, helpful, button) {
+        try {
+            const response = await fetch(`{{ store.url('reviews.vote') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    review_id: reviewId,
+                    helpful: helpful
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update button states
+                const reviewItem = button.closest('.review-item');
+                const helpfulBtns = reviewItem.querySelectorAll('.helpful-btn');
+                
+                helpfulBtns.forEach(btn => {
+                    btn.classList.remove('bg-green-50', 'border-green-200', 'text-green-700', 'bg-red-50', 'border-red-200', 'text-red-700');
+                });
+                
+                if (helpful) {
+                    button.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
+                    button.querySelector('.helpful-count').textContent = data.helpful_count;
+                } else {
+                    button.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
+                    button.querySelector('.unhelpful-count').textContent = data.unhelpful_count;
+                }
+                
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to vote"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Vote helpful error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function reportReview(reviewId) {
+        try {
+            const response = await fetch(`{{ store.url('reviews.report') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    review_id: reviewId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('{{ "Review reported successfully"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to report review"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Report review error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    function shareReview(reviewId) {
+        const shareUrl = `{{ store.url }}{{ product.url }}#review-${reviewId}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ "Check out this review"|t }}',
+                url: shareUrl
+            });
+        } else {
+            // Fallback to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showNotification('{{ "Review link copied to clipboard"|t }}', 'success');
+            });
+        }
+    }
+    
+    function showLoading() {
+        reviewsLoading.classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+        reviewsLoading.classList.add('hidden');
+    }
+    
+    function showNotification(message, type = 'info') {
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: '{{ store.direction == "rtl" ? "top-left" : "top-right" }}',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else {
+            alert(message);
+        }
+    }
+});
+</script>

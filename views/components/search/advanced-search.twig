@@ -1,0 +1,194 @@
+{#
+  Advanced Search Component
+  Modern search with autocomplete, suggestions, and filtering
+#}
+
+<div class="advanced-search-container relative" data-component="advanced-search">
+    <!-- Main Search Form -->
+    <form class="search-form relative" action="{{ store.url('product.search') }}" method="get" autocomplete="off">
+        <div class="search-input-wrapper relative">
+            <!-- Search Input -->
+            <div class="search-input-group flex items-center bg-white border border-secondary-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 transition-all duration-200">
+                <!-- Category Filter Dropdown -->
+                <div class="category-filter relative hidden lg:block border-r border-secondary-200">
+                    <select name="category" 
+                            class="category-select bg-transparent text-sm text-secondary-700 py-3 pl-4 pr-8 border-none focus:outline-none appearance-none cursor-pointer">
+                        <option value="">{{ 'All Categories'|t }}</option>
+                        {% for category in store.categories %}
+                        <option value="{{ category.id }}" {{ request.category == category.id ? 'selected' : '' }}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <i class="sicon-keyboard_arrow_down absolute right-2 top-1/2 transform -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
+                </div>
+                
+                <!-- Search Input Field -->
+                <input type="text" 
+                       name="q" 
+                       class="search-input flex-1 py-3 px-4 text-sm text-secondary-900 placeholder-secondary-400 border-none focus:outline-none bg-transparent"
+                       placeholder="{{ 'Search for products, brands, categories...'|t }}"
+                       value="{{ request.q }}"
+                       autocomplete="off"
+                       data-search-input>
+                
+                <!-- Search Button -->
+                <button type="submit" 
+                        class="search-button px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white transition-colors duration-200 flex items-center space-x-2">
+                    <i class="sicon-search text-lg"></i>
+                    <span class="hidden sm:inline">{{ 'Search'|t }}</span>
+                </button>
+            </div>
+            
+            <!-- Search Suggestions Dropdown -->
+            <div class="search-suggestions absolute top-full left-0 right-0 bg-white border border-secondary-200 rounded-b-xl shadow-lg z-50 hidden" data-search-suggestions>
+                <!-- Popular Searches -->
+                <div class="popular-searches p-4 border-b border-secondary-100">
+                    <h4 class="text-sm font-medium text-secondary-700 mb-2">{{ 'Popular Searches'|t }}</h4>
+                    <div class="flex flex-wrap gap-2">
+                        {% for popular in store.popular_searches|slice(0, 5) %}
+                        <button type="button" 
+                                class="popular-search-item text-xs bg-secondary-100 hover:bg-primary-100 text-secondary-600 hover:text-primary-700 px-3 py-1 rounded-full transition-colors"
+                                data-search-term="{{ popular.term }}">
+                            {{ popular.term }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Search Results -->
+                <div class="search-results max-h-80 overflow-y-auto">
+                    <!-- Product Suggestions -->
+                    <div class="product-suggestions" data-product-suggestions></div>
+                    
+                    <!-- Category Suggestions -->
+                    <div class="category-suggestions" data-category-suggestions></div>
+                    
+                    <!-- Brand Suggestions -->
+                    <div class="brand-suggestions" data-brand-suggestions></div>
+                </div>
+                
+                <!-- View All Results -->
+                <div class="view-all-results p-4 border-t border-secondary-100 bg-secondary-50">
+                    <button type="submit" 
+                            class="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        {{ 'View all search results'|t }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters Toggle (Mobile) -->
+        <button type="button" 
+                class="filters-toggle lg:hidden mt-3 w-full flex items-center justify-center space-x-2 py-2 text-sm text-secondary-600 hover:text-primary-600 transition-colors"
+                data-filters-toggle>
+            <i class="sicon-filter"></i>
+            <span>{{ 'Filters'|t }}</span>
+        </button>
+        
+        <!-- Advanced Filters Panel -->
+        <div class="advanced-filters hidden lg:flex items-center space-x-4 mt-4 p-4 bg-secondary-50 rounded-xl" data-advanced-filters>
+            <!-- Price Range -->
+            <div class="filter-group">
+                <label class="text-xs text-secondary-600 block mb-1">{{ 'Price Range'|t }}</label>
+                <div class="flex items-center space-x-2">
+                    <input type="number" 
+                           name="min_price" 
+                           placeholder="{{ 'Min'|t }}"
+                           class="w-20 px-2 py-1 text-xs border border-secondary-200 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                           value="{{ request.min_price }}">
+                    <span class="text-secondary-400">-</span>
+                    <input type="number" 
+                           name="max_price" 
+                           placeholder="{{ 'Max'|t }}"
+                           class="w-20 px-2 py-1 text-xs border border-secondary-200 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                           value="{{ request.max_price }}">
+                </div>
+            </div>
+            
+            <!-- Brand Filter -->
+            {% if store.brands %}
+            <div class="filter-group">
+                <label class="text-xs text-secondary-600 block mb-1">{{ 'Brand'|t }}</label>
+                <select name="brand" 
+                        class="text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="">{{ 'All Brands'|t }}</option>
+                    {% for brand in store.brands %}
+                    <option value="{{ brand.id }}" {{ request.brand == brand.id ? 'selected' : '' }}>
+                        {{ brand.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            
+            <!-- Rating Filter -->
+            <div class="filter-group">
+                <label class="text-xs text-secondary-600 block mb-1">{{ 'Rating'|t }}</label>
+                <select name="min_rating" 
+                        class="text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="">{{ 'Any Rating'|t }}</option>
+                    <option value="4" {{ request.min_rating == '4' ? 'selected' : '' }}>4+ {{ 'Stars'|t }}</option>
+                    <option value="3" {{ request.min_rating == '3' ? 'selected' : '' }}>3+ {{ 'Stars'|t }}</option>
+                    <option value="2" {{ request.min_rating == '2' ? 'selected' : '' }}>2+ {{ 'Stars'|t }}</option>
+                </select>
+            </div>
+            
+            <!-- Availability Filter -->
+            <div class="filter-group">
+                <label class="text-xs text-secondary-600 block mb-1">{{ 'Availability'|t }}</label>
+                <select name="availability" 
+                        class="text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="">{{ 'All Products'|t }}</option>
+                    <option value="in_stock" {{ request.availability == 'in_stock' ? 'selected' : '' }}>{{ 'In Stock'|t }}</option>
+                    <option value="on_sale" {{ request.availability == 'on_sale' ? 'selected' : '' }}>{{ 'On Sale'|t }}</option>
+                </select>
+            </div>
+            
+            <!-- Sort By -->
+            <div class="filter-group">
+                <label class="text-xs text-secondary-600 block mb-1">{{ 'Sort By'|t }}</label>
+                <select name="sort" 
+                        class="text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="relevance" {{ request.sort == 'relevance' ? 'selected' : '' }}>{{ 'Relevance'|t }}</option>
+                    <option value="name_asc" {{ request.sort == 'name_asc' ? 'selected' : '' }}>{{ 'Name A-Z'|t }}</option>
+                    <option value="name_desc" {{ request.sort == 'name_desc' ? 'selected' : '' }}>{{ 'Name Z-A'|t }}</option>
+                    <option value="price_asc" {{ request.sort == 'price_asc' ? 'selected' : '' }}>{{ 'Price Low to High'|t }}</option>
+                    <option value="price_desc" {{ request.sort == 'price_desc' ? 'selected' : '' }}>{{ 'Price High to Low'|t }}</option>
+                    <option value="newest" {{ request.sort == 'newest' ? 'selected' : '' }}>{{ 'Newest First'|t }}</option>
+                    <option value="rating" {{ request.sort == 'rating' ? 'selected' : '' }}>{{ 'Highest Rated'|t }}</option>
+                    <option value="popular" {{ request.sort == 'popular' ? 'selected' : '' }}>{{ 'Most Popular'|t }}</option>
+                </select>
+            </div>
+            
+            <!-- Clear Filters -->
+            <button type="button" 
+                    class="clear-filters text-xs text-secondary-600 hover:text-red-600 transition-colors"
+                    data-clear-filters>
+                {{ 'Clear'|t }}
+            </button>
+        </div>
+    </form>
+    
+    <!-- Recent Searches (for logged-in users) -->
+    {% if user and user.recent_searches %}
+    <div class="recent-searches mt-4 p-4 bg-secondary-50 rounded-xl">
+        <h4 class="text-sm font-medium text-secondary-700 mb-2">{{ 'Recent Searches'|t }}</h4>
+        <div class="flex flex-wrap gap-2">
+            {% for search in user.recent_searches|slice(0, 5) %}
+            <button type="button" 
+                    class="recent-search-item text-xs bg-white hover:bg-primary-100 text-secondary-600 hover:text-primary-700 px-3 py-1 rounded-full border border-secondary-200 transition-colors"
+                    data-search-term="{{ search.term }}">
+                <i class="sicon-clock text-xs mr-1"></i>
+                {{ search.term }}
+            </button>
+            {% endfor %}
+            <button type="button" 
+                    class="clear-recent text-xs text-secondary-400 hover:text-red-500 transition-colors"
+                    data-clear-recent>
+                {{ 'Clear all'|t }}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,729 @@
+{#
+  Advanced Product Comparison Component
+  Side-by-side product comparison with detailed attributes
+#}
+
+<div class="product-comparison bg-white rounded-xl border border-secondary-200 overflow-hidden"
+     data-component="product-comparison">
+     
+    <!-- Comparison Header -->
+    <div class="comparison-header bg-secondary-50 p-6 border-b border-secondary-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-secondary-900 mb-2">
+                    {{ 'Compare Products'|t }}
+                </h2>
+                <p class="text-sm text-secondary-600">
+                    {{ 'Find the perfect product by comparing features, prices, and reviews'|t }}
+                </p>
+            </div>
+            
+            <!-- Comparison Actions -->
+            <div class="flex items-center space-x-3">
+                <button class="export-comparison btn btn-outline btn-sm flex items-center space-x-2"
+                        data-export-comparison>
+                    <i class="sicon-download"></i>
+                    <span>{{ 'Export'|t }}</span>
+                </button>
+                
+                <button class="clear-comparison btn btn-ghost btn-sm flex items-center space-x-2 text-red-600 hover:text-red-700"
+                        data-clear-comparison>
+                    <i class="sicon-trash"></i>
+                    <span>{{ 'Clear All'|t }}</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Add Product to Compare -->
+        {% if compare.items|length < 4 %}
+        <div class="add-product-section mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-secondary-300">
+            <div class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <input type="text" 
+                           placeholder="{{ 'Search for products to compare...'|t }}"
+                           class="w-full px-4 py-2 border border-secondary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                           data-product-search>
+                </div>
+                <button class="btn btn-primary btn-sm"
+                        data-add-random-product>
+                    {{ 'Add Random'|t }}
+                </button>
+            </div>
+            
+            <!-- Search Results -->
+            <div class="search-results mt-3 hidden" data-search-results>
+                <!-- Search results will appear here -->
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Comparison Table -->
+    <div class="comparison-content">
+        {% if compare.items|length > 0 %}
+        
+        <!-- Products Overview -->
+        <div class="products-overview grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+            <!-- Attribute Header -->
+            <div class="attribute-header p-4 bg-secondary-50 border-r border-secondary-200 sticky left-0 z-10">
+                <div class="text-sm font-semibold text-secondary-900 mb-1">
+                    {{ 'Product'|t }}
+                </div>
+                <div class="text-xs text-secondary-600">
+                    {{ compare.items|length }} {{ 'item(s) selected'|t }}
+                </div>
+            </div>
+            
+            <!-- Product Cards -->
+            {% for product in compare.items %}
+            <div class="product-overview p-4 border-r border-secondary-200 last:border-r-0 relative group">
+                <!-- Remove Button -->
+                <button class="remove-product absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-600 z-10"
+                        data-remove-product="{{ product.id }}"
+                        aria-label="{{ 'Remove from comparison'|t }}">
+                    <i class="sicon-close text-xs"></i>
+                </button>
+                
+                <!-- Product Image -->
+                <div class="product-image mb-4">
+                    <a href="{{ product.url }}" class="block aspect-square">
+                        <img src="{{ product.image }}" 
+                             alt="{{ product.name }}"
+                             class="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform">
+                    </a>
+                </div>
+                
+                <!-- Product Info -->
+                <div class="product-info text-center">
+                    <h3 class="product-name font-semibold text-secondary-900 mb-2 line-clamp-2">
+                        <a href="{{ product.url }}" class="hover:text-primary-600 transition-colors">
+                            {{ product.name }}
+                        </a>
+                    </h3>
+                    
+                    <!-- Price -->
+                    <div class="product-price mb-3">
+                        {% if product.is_on_sale %}
+                        <span class="current-price text-lg font-bold text-primary-600">
+                            {{ product.sale_price|money }}
+                        </span>
+                        <span class="original-price text-sm text-secondary-500 line-through block">
+                            {{ product.regular_price|money }}
+                        </span>
+                        {% else %}
+                        <span class="current-price text-lg font-bold text-secondary-900">
+                            {{ product.price|money }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Rating -->
+                    {% if product.reviews_count > 0 %}
+                    <div class="product-rating flex items-center justify-center space-x-1 mb-3">
+                        <div class="stars flex">
+                            {% for i in 1..5 %}
+                            <i class="w-4 h-4 {{ i <= product.rating ? 'text-yellow-400 sicon-star-filled' : 'text-secondary-300 sicon-star' }}"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="text-xs text-secondary-500">({{ product.reviews_count }})</span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Actions -->
+                    <div class="product-actions space-y-2">
+                        {% if product.type == 'simple' and not product.is_out_of_stock %}
+                        <button class="btn btn-primary btn-sm w-full add-to-cart-btn"
+                                data-product-id="{{ product.id }}">
+                            <i class="sicon-cart mr-1"></i>
+                            {{ 'Add to Cart'|t }}
+                        </button>
+                        {% else %}
+                        <a href="{{ product.url }}" 
+                           class="btn btn-outline btn-sm w-full">
+                            {{ product.is_out_of_stock ? 'View Details'|t : 'Select Options'|t }}
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-ghost btn-sm w-full wishlist-btn {{ product.is_in_wishlist ? 'active text-red-500' : '' }}"
+                                data-product-id="{{ product.id }}">
+                            <i class="sicon-heart{{ product.is_in_wishlist ? '-solid' : '' }} mr-1"></i>
+                            {{ product.is_in_wishlist ? 'Remove from Wishlist'|t : 'Add to Wishlist'|t }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Comparison Attributes -->
+        <div class="comparison-attributes">
+            
+            <!-- Basic Information -->
+            <div class="attribute-section">
+                <div class="section-header bg-secondary-50 p-3 border-b border-secondary-200">
+                    <h4 class="font-semibold text-secondary-900">{{ 'Basic Information'|t }}</h4>
+                </div>
+                
+                <!-- Brand -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Brand'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {{ product.brand.name|default('-') }}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Category -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Category'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {{ product.category.name|default('-') }}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Availability -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Availability'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {% if product.is_out_of_stock %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-600">
+                            <i class="sicon-close mr-1"></i>
+                            {{ 'Out of Stock'|t }}
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
+                            <i class="sicon-check mr-1"></i>
+                            {{ 'In Stock'|t }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Features & Specifications -->
+            {% set all_features = [] %}
+            {% for product in compare.items %}
+                {% for feature in product.features %}
+                    {% if feature.name not in all_features %}
+                        {% set all_features = all_features|merge([feature.name]) %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            
+            {% if all_features|length > 0 %}
+            <div class="attribute-section">
+                <div class="section-header bg-secondary-50 p-3 border-b border-secondary-200">
+                    <h4 class="font-semibold text-secondary-900">{{ 'Features & Specifications'|t }}</h4>
+                </div>
+                
+                {% for feature_name in all_features %}
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ feature_name }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {% set feature_value = null %}
+                        {% for feature in product.features %}
+                            {% if feature.name == feature_name %}
+                                {% set feature_value = feature.value %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if feature_value %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
+                            <i class="sicon-check mr-1"></i>
+                            {{ feature_value }}
+                        </span>
+                        {% else %}
+                        <span class="text-secondary-400">-</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Shipping & Returns -->
+            <div class="attribute-section">
+                <div class="section-header bg-secondary-50 p-3 border-b border-secondary-200">
+                    <h4 class="font-semibold text-secondary-900">{{ 'Shipping & Returns'|t }}</h4>
+                </div>
+                
+                <!-- Free Shipping -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Free Shipping'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {% if product.free_shipping %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
+                            <i class="sicon-check mr-1"></i>
+                            {{ 'Yes'|t }}
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-600">
+                            <i class="sicon-close mr-1"></i>
+                            {{ 'No'|t }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Return Policy -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Return Policy'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {{ product.return_policy|default('Standard return policy'|t) }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Customer Reviews Summary -->
+            <div class="attribute-section">
+                <div class="section-header bg-secondary-50 p-3 border-b border-secondary-200">
+                    <h4 class="font-semibold text-secondary-900">{{ 'Customer Reviews'|t }}</h4>
+                </div>
+                
+                <!-- Average Rating -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Average Rating'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        {% if product.reviews_count > 0 %}
+                        <div class="flex items-center space-x-2">
+                            <div class="stars flex">
+                                {% for i in 1..5 %}
+                                <i class="w-3 h-3 {{ i <= product.rating ? 'text-yellow-400 sicon-star-filled' : 'text-secondary-300 sicon-star' }}"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="text-xs text-secondary-600">{{ product.rating }}/5</span>
+                        </div>
+                        {% else %}
+                        <span class="text-secondary-400">{{ 'No reviews'|t }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Total Reviews -->
+                <div class="attribute-row grid grid-cols-{{ min(compare.items|length + 1, 5) }} gap-0 border-b border-secondary-200">
+                    <div class="attribute-label p-4 bg-secondary-50 border-r border-secondary-200 font-medium text-sm text-secondary-900">
+                        {{ 'Total Reviews'|t }}
+                    </div>
+                    {% for product in compare.items %}
+                    <div class="attribute-value p-4 border-r border-secondary-200 last:border-r-0 text-sm">
+                        <span class="font-medium">{{ product.reviews_count|default(0) }}</span>
+                        <span class="text-secondary-500">{{ 'review(s)'|t }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        
+        <!-- Empty State -->
+        <div class="empty-comparison flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div class="empty-icon w-24 h-24 bg-secondary-100 rounded-full flex items-center justify-center mb-6">
+                <i class="sicon-shuffle text-4xl text-secondary-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-secondary-900 mb-3">
+                {{ 'No products to compare'|t }}
+            </h3>
+            <p class="text-secondary-600 mb-6 max-w-md">
+                {{ 'Add products to your comparison list to see them side by side and make better purchasing decisions.'|t }}
+            </p>
+            <a href="{{ store.url('products.index') }}" 
+               class="btn btn-primary flex items-center space-x-2">
+                <i class="sicon-grid"></i>
+                <span>{{ 'Browse Products'|t }}</span>
+            </a>
+        </div>
+        
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Advanced Product Comparison Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const comparisonContainer = document.querySelector('[data-component="product-comparison"]');
+    if (!comparisonContainer) return;
+    
+    const productSearch = document.querySelector('[data-product-search]');
+    const searchResults = document.querySelector('[data-search-results]');
+    const clearComparison = document.querySelector('[data-clear-comparison]');
+    const exportComparison = document.querySelector('[data-export-comparison]');
+    const addRandomProduct = document.querySelector('[data-add-random-product]');
+    
+    let searchTimeout;
+    
+    // Product search functionality
+    if (productSearch) {
+        productSearch.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    searchProducts(query);
+                }, 300);
+            } else {
+                hideSearchResults();
+            }
+        });
+    }
+    
+    // Remove product from comparison
+    document.addEventListener('click', async function(e) {
+        const removeBtn = e.target.closest('[data-remove-product]');
+        if (!removeBtn) return;
+        
+        const productId = removeBtn.dataset.removeProduct;
+        await removeFromComparison(productId);
+    });
+    
+    // Clear all comparison
+    if (clearComparison) {
+        clearComparison.addEventListener('click', async function() {
+            if (confirm('{{ "Are you sure you want to clear all products from comparison?"|t }}')) {
+                await clearAllComparison();
+            }
+        });
+    }
+    
+    // Export comparison
+    if (exportComparison) {
+        exportComparison.addEventListener('click', function() {
+            exportComparisonData();
+        });
+    }
+    
+    // Add random product
+    if (addRandomProduct) {
+        addRandomProduct.addEventListener('click', async function() {
+            await addRandomProductToComparison();
+        });
+    }
+    
+    // Add to cart from comparison
+    document.addEventListener('click', async function(e) {
+        const addToCartBtn = e.target.closest('.add-to-cart-btn');
+        if (!addToCartBtn) return;
+        
+        const productId = addToCartBtn.dataset.productId;
+        await addToCart(productId);
+    });
+    
+    // Wishlist toggle
+    document.addEventListener('click', async function(e) {
+        const wishlistBtn = e.target.closest('.wishlist-btn');
+        if (!wishlistBtn) return;
+        
+        const productId = wishlistBtn.dataset.productId;
+        await toggleWishlist(productId, wishlistBtn);
+    });
+    
+    async function searchProducts(query) {
+        try {
+            const response = await fetch(`{{ store.url('api.products.search') }}?q=${encodeURIComponent(query)}&limit=5&exclude_compared=1`);
+            const data = await response.json();
+            
+            if (data.success && data.products.length > 0) {
+                displaySearchResults(data.products);
+            } else {
+                showNoSearchResults();
+            }
+        } catch (error) {
+            console.error('Product search error:', error);
+            showNoSearchResults();
+        }
+    }
+    
+    function displaySearchResults(products) {
+        const resultsHtml = products.map(product => `
+            <div class="search-result-item flex items-center space-x-3 p-3 hover:bg-secondary-50 rounded-lg cursor-pointer transition-colors"
+                 data-add-to-comparison="${product.id}">
+                <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded-lg">
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm text-secondary-900 truncate">${product.name}</div>
+                    <div class="text-xs text-primary-600 font-medium">${product.price}</div>
+                </div>
+                <button class="add-to-comparison-btn btn btn-sm btn-outline">
+                    <i class="sicon-plus mr-1"></i>
+                    {{ 'Add'|t }}
+                </button>
+            </div>
+        `).join('');
+        
+        searchResults.innerHTML = resultsHtml;
+        searchResults.classList.remove('hidden');
+        
+        // Add click handlers for search results
+        searchResults.querySelectorAll('[data-add-to-comparison]').forEach(item => {
+            item.addEventListener('click', async function() {
+                const productId = this.dataset.addToComparison;
+                await addToComparison(productId);
+            });
+        });
+    }
+    
+    function showNoSearchResults() {
+        searchResults.innerHTML = '<div class="p-3 text-center text-secondary-500 text-sm">{{ "No products found"|t }}</div>';
+        searchResults.classList.remove('hidden');
+    }
+    
+    function hideSearchResults() {
+        searchResults.classList.add('hidden');
+    }
+    
+    async function addToComparison(productId) {
+        try {
+            const response = await fetch(`{{ store.url('product.compare.add') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ product_id: productId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload(); // Refresh to show updated comparison
+                showNotification('{{ "Product added to comparison"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to add product"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Add to comparison error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function removeFromComparison(productId) {
+        try {
+            const response = await fetch(`{{ store.url('product.compare.remove') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ product_id: productId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload(); // Refresh to show updated comparison
+                showNotification('{{ "Product removed from comparison"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to remove product"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Remove from comparison error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function clearAllComparison() {
+        try {
+            const response = await fetch(`{{ store.url('product.compare.clear') }}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload(); // Refresh to show updated comparison
+                showNotification('{{ "Comparison cleared"|t }}', 'success');
+            }
+        } catch (error) {
+            console.error('Clear comparison error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function addRandomProductToComparison() {
+        try {
+            const response = await fetch(`{{ store.url('product.compare.add-random') }}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload(); // Refresh to show updated comparison
+                showNotification('{{ "Random product added to comparison"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "No suitable products found"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Add random product error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    function exportComparisonData() {
+        // Create CSV content
+        const products = Array.from(document.querySelectorAll('.product-overview'));
+        const attributes = Array.from(document.querySelectorAll('.attribute-row'));
+        
+        let csvContent = 'Attribute,';
+        
+        // Add product names as headers
+        products.forEach(product => {
+            const name = product.querySelector('.product-name').textContent.trim();
+            csvContent += `"${name}",`;
+        });
+        csvContent = csvContent.slice(0, -1) + '\n'; // Remove last comma and add newline
+        
+        // Add attribute rows
+        attributes.forEach(row => {
+            const label = row.querySelector('.attribute-label').textContent.trim();
+            csvContent += `"${label}",`;
+            
+            row.querySelectorAll('.attribute-value').forEach(value => {
+                const valueText = value.textContent.trim().replace(/"/g, '""');
+                csvContent += `"${valueText}",`;
+            });
+            csvContent = csvContent.slice(0, -1) + '\n'; // Remove last comma and add newline
+        });
+        
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'product-comparison.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        showNotification('{{ "Comparison exported successfully"|t }}', 'success');
+    }
+    
+    async function addToCart(productId) {
+        try {
+            const response = await fetch(`{{ store.url('cart.add') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    product_id: productId,
+                    quantity: 1
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('{{ "Product added to cart"|t }}', 'success');
+                // Update cart count in header
+                updateHeaderCartCount(data.cart_count);
+            } else {
+                showNotification(data.message || '{{ "Failed to add to cart"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Add to cart error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    async function toggleWishlist(productId, button) {
+        try {
+            const isActive = button.classList.contains('active');
+            const action = isActive ? 'remove' : 'add';
+            
+            const response = await fetch(`{{ store.url('wishlist.toggle') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    product_id: productId,
+                    action: action
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                button.classList.toggle('active');
+                button.classList.toggle('text-red-500');
+                
+                const icon = button.querySelector('i');
+                if (isActive) {
+                    icon.className = 'sicon-heart mr-1';
+                    button.querySelector('span').textContent = '{{ "Add to Wishlist"|t }}';
+                } else {
+                    icon.className = 'sicon-heart-solid mr-1';
+                    button.querySelector('span').textContent = '{{ "Remove from Wishlist"|t }}';
+                }
+                
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to update wishlist"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Wishlist toggle error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        }
+    }
+    
+    function updateHeaderCartCount(count) {
+        const headerCartCount = document.querySelector('.header-actions .badge');
+        if (headerCartCount) {
+            headerCartCount.textContent = count;
+            headerCartCount.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: '{{ store.direction == "rtl" ? "top-left" : "top-right" }}',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else {
+            alert(message);
+        }
+    }
+});
+</script>

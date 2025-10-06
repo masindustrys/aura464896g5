@@ -1,0 +1,644 @@
+{#
+  Enhanced Cart Sidebar Component
+  Modern sliding cart with advanced features
+#}
+
+<!-- Cart Sidebar Overlay -->
+<div class="cart-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-50 opacity-0 invisible transition-all duration-300" 
+     id="cartOverlay" 
+     data-cart-overlay></div>
+
+<!-- Cart Sidebar -->
+<div class="cart-sidebar fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 transform translate-x-full transition-transform duration-300 flex flex-col"
+     id="cartSidebar"
+     data-cart-sidebar>
+     
+    <!-- Cart Header -->
+    <div class="cart-header flex items-center justify-between p-4 border-b border-secondary-200 bg-white">
+        <div class="flex items-center space-x-3">
+            <h3 class="text-lg font-semibold text-secondary-900">
+                {{ 'Shopping Cart'|t }}
+            </h3>
+            <span class="cart-count bg-primary-100 text-primary-700 text-xs px-2 py-1 rounded-full font-medium"
+                  data-cart-count>
+                {{ cart.items_count|default(0) }}
+            </span>
+        </div>
+        
+        <button class="cart-close p-2 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                id="cartClose"
+                aria-label="{{ 'Close cart'|t }}">
+            <i class="sicon-close text-xl"></i>
+        </button>
+    </div>
+    
+    <!-- Cart Content -->
+    <div class="cart-content flex-1 overflow-hidden">
+        <!-- Empty Cart State -->
+        <div class="empty-cart {{ cart.items_count > 0 ? 'hidden' : '' }} flex flex-col items-center justify-center h-full p-6 text-center"
+             data-empty-cart>
+            <div class="empty-cart-icon w-24 h-24 bg-secondary-100 rounded-full flex items-center justify-center mb-4">
+                <i class="sicon-cart text-3xl text-secondary-400"></i>
+            </div>
+            <h4 class="text-lg font-medium text-secondary-900 mb-2">
+                {{ 'Your cart is empty'|t }}
+            </h4>
+            <p class="text-sm text-secondary-600 mb-6 max-w-xs">
+                {{ 'Add items to your cart to see them here'|t }}
+            </p>
+            <button class="btn btn-primary px-6 py-3 text-sm font-medium rounded-lg"
+                    onclick="document.getElementById('cartSidebar').classList.add('translate-x-full'); document.getElementById('cartOverlay').classList.add('opacity-0', 'invisible');">
+                {{ 'Start Shopping'|t }}
+            </button>
+        </div>
+        
+        <!-- Cart Items -->
+        <div class="cart-items {{ cart.items_count == 0 ? 'hidden' : '' }} flex-1 overflow-y-auto p-4 space-y-4"
+             data-cart-items>
+             
+            {% for item in cart.items %}
+            <div class="cart-item flex space-x-4 p-4 bg-secondary-50 rounded-xl relative group"
+                 data-item-id="{{ item.id }}"
+                 data-product-id="{{ item.product.id }}">
+                 
+                <!-- Product Image -->
+                <div class="item-image flex-shrink-0">
+                    <a href="{{ item.product.url }}" class="block">
+                        <img src="{{ item.product.image }}" 
+                             alt="{{ item.product.name }}"
+                             class="w-16 h-16 object-cover rounded-lg">
+                    </a>
+                </div>
+                
+                <!-- Item Details -->
+                <div class="item-details flex-1 min-w-0">
+                    <h4 class="item-title font-medium text-secondary-900 text-sm mb-1 line-clamp-2">
+                        <a href="{{ item.product.url }}" class="hover:text-primary-600 transition-colors">
+                            {{ item.product.name }}
+                        </a>
+                    </h4>
+                    
+                    <!-- Item Variants -->
+                    {% if item.variant_options %}
+                    <div class="item-variants text-xs text-secondary-600 mb-2 space-x-2">
+                        {% for option in item.variant_options %}
+                        <span class="variant-option">{{ option.name }}: {{ option.value }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Price and Quantity -->
+                    <div class="item-controls flex items-center justify-between">
+                        <div class="item-price">
+                            {% if item.is_on_sale %}
+                            <span class="current-price text-sm font-semibold text-primary-600">
+                                {{ item.sale_price|money }}
+                            </span>
+                            <span class="original-price text-xs text-secondary-500 line-through ml-1">
+                                {{ item.original_price|money }}
+                            </span>
+                            {% else %}
+                            <span class="current-price text-sm font-semibold text-secondary-900">
+                                {{ item.price|money }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Quantity Controls -->
+                        <div class="quantity-controls flex items-center space-x-2">
+                            <button class="quantity-btn quantity-decrease w-8 h-8 bg-white border border-secondary-200 rounded-lg flex items-center justify-center text-secondary-600 hover:text-secondary-900 hover:border-secondary-300 transition-all disabled:opacity-50"
+                                    data-action="decrease"
+                                    data-item-id="{{ item.id }}"
+                                    {{ item.quantity <= 1 ? 'disabled' : '' }}>
+                                <i class="sicon-minus text-xs"></i>
+                            </button>
+                            
+                            <span class="quantity-display min-w-8 text-center text-sm font-medium text-secondary-900"
+                                  data-quantity="{{ item.id }}">
+                                {{ item.quantity }}
+                            </span>
+                            
+                            <button class="quantity-btn quantity-increase w-8 h-8 bg-white border border-secondary-200 rounded-lg flex items-center justify-center text-secondary-600 hover:text-secondary-900 hover:border-secondary-300 transition-all disabled:opacity-50"
+                                    data-action="increase"
+                                    data-item-id="{{ item.id }}"
+                                    {{ item.stock_quantity and item.quantity >= item.stock_quantity ? 'disabled' : '' }}>
+                                <i class="sicon-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Item Total -->
+                    <div class="item-total text-right mt-2">
+                        <span class="total-price text-sm font-bold text-secondary-900"
+                              data-item-total="{{ item.id }}">
+                            {{ item.total|money }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Remove Button -->
+                <button class="remove-item absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-600"
+                        data-action="remove"
+                        data-item-id="{{ item.id }}"
+                        aria-label="{{ 'Remove item'|t }}">
+                    <i class="sicon-close text-xs"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Cart Summary -->
+    <div class="cart-summary {{ cart.items_count == 0 ? 'hidden' : '' }} border-t border-secondary-200 p-4 bg-white"
+         data-cart-summary>
+         
+        <!-- Shipping Calculator -->
+        <div class="shipping-calculator mb-4 p-3 bg-secondary-50 rounded-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-secondary-700">{{ 'Shipping'|t }}</span>
+                <button class="shipping-toggle text-xs text-primary-600 hover:text-primary-700 font-medium"
+                        data-shipping-toggle>
+                    {{ 'Calculate'|t }}
+                </button>
+            </div>
+            
+            <div class="shipping-form hidden" data-shipping-form>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <select class="shipping-country text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            data-shipping-country>
+                        <option value="">{{ 'Select Country'|t }}</option>
+                        {% for country in store.shipping_countries %}
+                        <option value="{{ country.code }}">{{ country.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" 
+                           placeholder="{{ 'Postal Code'|t }}"
+                           class="shipping-postal text-xs border border-secondary-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                           data-shipping-postal>
+                </div>
+                <button class="calculate-shipping w-full text-xs bg-primary-600 text-white py-1 rounded hover:bg-primary-700 transition-colors"
+                        data-calculate-shipping>
+                    {{ 'Calculate Shipping'|t }}
+                </button>
+            </div>
+            
+            <div class="shipping-result text-sm">
+                <span class="shipping-cost font-medium text-secondary-900" data-shipping-cost>
+                    {{ cart.shipping_cost ? cart.shipping_cost|money : 'Free' }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Promo Code -->
+        <div class="promo-code mb-4">
+            <div class="flex space-x-2">
+                <input type="text" 
+                       placeholder="{{ 'Promo code'|t }}"
+                       class="promo-input flex-1 text-sm border border-secondary-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                       data-promo-input>
+                <button class="apply-promo px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 text-sm font-medium rounded-lg transition-colors"
+                        data-apply-promo>
+                    {{ 'Apply'|t }}
+                </button>
+            </div>
+            
+            <!-- Applied Promo -->
+            {% if cart.promo_code %}
+            <div class="applied-promo flex items-center justify-between mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                <div class="flex items-center space-x-2">
+                    <i class="sicon-check text-green-600"></i>
+                    <span class="text-green-800">{{ cart.promo_code.code }}</span>
+                    <span class="text-green-600">(-{{ cart.promo_code.discount|money }})</span>
+                </div>
+                <button class="remove-promo text-green-600 hover:text-green-700"
+                        data-remove-promo>
+                    <i class="sicon-close text-xs"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="order-summary space-y-2 mb-4 text-sm">
+            <div class="summary-row flex justify-between">
+                <span class="text-secondary-600">{{ 'Subtotal'|t }}</span>
+                <span class="subtotal font-medium text-secondary-900" data-subtotal>
+                    {{ cart.subtotal|money }}
+                </span>
+            </div>
+            
+            {% if cart.discount_amount %}
+            <div class="summary-row flex justify-between text-green-600">
+                <span>{{ 'Discount'|t }}</span>
+                <span class="discount" data-discount>
+                    -{{ cart.discount_amount|money }}
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="summary-row flex justify-between">
+                <span class="text-secondary-600">{{ 'Shipping'|t }}</span>
+                <span class="shipping font-medium text-secondary-900" data-shipping>
+                    {{ cart.shipping_cost ? cart.shipping_cost|money : 'Free' }}
+                </span>
+            </div>
+            
+            {% if cart.tax_amount %}
+            <div class="summary-row flex justify-between">
+                <span class="text-secondary-600">{{ 'Tax'|t }}</span>
+                <span class="tax font-medium text-secondary-900" data-tax>
+                    {{ cart.tax_amount|money }}
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="summary-row total-row flex justify-between pt-2 border-t border-secondary-200">
+                <span class="font-semibold text-secondary-900">{{ 'Total'|t }}</span>
+                <span class="total-amount font-bold text-lg text-primary-600" data-total>
+                    {{ cart.total|money }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Cart Actions -->
+        <div class="cart-actions space-y-3">
+            <a href="{{ store.url('checkout.index') }}" 
+               class="btn btn-primary w-full py-3 text-center font-semibold rounded-lg flex items-center justify-center space-x-2">
+                <i class="sicon-lock text-lg"></i>
+                <span>{{ 'Secure Checkout'|t }}</span>
+            </a>
+            
+            <div class="secondary-actions grid grid-cols-2 gap-3">
+                <a href="{{ store.url('cart.index') }}" 
+                   class="btn btn-outline text-center py-2 text-sm font-medium rounded-lg">
+                    {{ 'View Cart'|t }}
+                </a>
+                <button class="btn btn-ghost text-center py-2 text-sm font-medium rounded-lg"
+                        onclick="document.getElementById('cartSidebar').classList.add('translate-x-full'); document.getElementById('cartOverlay').classList.add('opacity-0', 'invisible');">
+                    {{ 'Continue Shopping'|t }}
+                </button>
+            </div>
+        </div>
+        
+        <!-- Trust Badges -->
+        <div class="trust-badges mt-4 pt-4 border-t border-secondary-200">
+            <div class="flex items-center justify-center space-x-4 text-xs text-secondary-500">
+                <div class="flex items-center space-x-1">
+                    <i class="sicon-shield-check text-green-600"></i>
+                    <span>{{ 'Secure Payment'|t }}</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <i class="sicon-truck text-blue-600"></i>
+                    <span>{{ 'Free Shipping'|t }}</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <i class="sicon-refresh text-orange-600"></i>
+                    <span>{{ 'Easy Returns'|t }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="cart-loading absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 opacity-0 invisible transition-all duration-200"
+         data-cart-loading>
+        <div class="flex flex-col items-center space-y-3">
+            <div class="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+            <span class="text-sm text-secondary-600">{{ 'Updating cart...'|t }}</span>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced Cart Sidebar Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const cartToggle = document.getElementById('cartToggle');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartOverlay = document.getElementById('cartOverlay');
+    const cartClose = document.getElementById('cartClose');
+    const cartLoading = document.querySelector('[data-cart-loading]');
+    
+    // Cart visibility functions
+    function openCart() {
+        cartSidebar.classList.remove('translate-x-full');
+        cartOverlay.classList.remove('opacity-0', 'invisible');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeCart() {
+        cartSidebar.classList.add('translate-x-full');
+        cartOverlay.classList.add('opacity-0', 'invisible');
+        document.body.style.overflow = '';
+    }
+    
+    function showLoading() {
+        cartLoading.classList.remove('opacity-0', 'invisible');
+    }
+    
+    function hideLoading() {
+        cartLoading.classList.add('opacity-0', 'invisible');
+    }
+    
+    // Event listeners
+    if (cartToggle) {
+        cartToggle.addEventListener('click', openCart);
+    }
+    
+    if (cartClose) {
+        cartClose.addEventListener('click', closeCart);
+    }
+    
+    if (cartOverlay) {
+        cartOverlay.addEventListener('click', closeCart);
+    }
+    
+    // Quantity controls
+    document.addEventListener('click', async function(e) {
+        const target = e.target.closest('.quantity-btn');
+        if (!target) return;
+        
+        const action = target.dataset.action;
+        const itemId = target.dataset.itemId;
+        
+        if (action === 'increase' || action === 'decrease') {
+            await updateQuantity(itemId, action);
+        }
+    });
+    
+    // Remove item
+    document.addEventListener('click', async function(e) {
+        const target = e.target.closest('.remove-item');
+        if (!target) return;
+        
+        const itemId = target.dataset.itemId;
+        await removeItem(itemId);
+    });
+    
+    // Shipping calculator
+    const shippingToggle = document.querySelector('[data-shipping-toggle]');
+    const shippingForm = document.querySelector('[data-shipping-form]');
+    const calculateShipping = document.querySelector('[data-calculate-shipping]');
+    
+    if (shippingToggle && shippingForm) {
+        shippingToggle.addEventListener('click', function() {
+            shippingForm.classList.toggle('hidden');
+        });
+    }
+    
+    if (calculateShipping) {
+        calculateShipping.addEventListener('click', async function() {
+            const country = document.querySelector('[data-shipping-country]').value;
+            const postal = document.querySelector('[data-shipping-postal]').value;
+            
+            if (country) {
+                await calculateShippingCost(country, postal);
+            }
+        });
+    }
+    
+    // Promo code
+    const applyPromo = document.querySelector('[data-apply-promo]');
+    const promoInput = document.querySelector('[data-promo-input]');
+    const removePromo = document.querySelector('[data-remove-promo]');
+    
+    if (applyPromo && promoInput) {
+        applyPromo.addEventListener('click', async function() {
+            const code = promoInput.value.trim();
+            if (code) {
+                await applyPromoCode(code);
+            }
+        });
+        
+        promoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyPromo.click();
+            }
+        });
+    }
+    
+    if (removePromo) {
+        removePromo.addEventListener('click', async function() {
+            await removePromoCode();
+        });
+    }
+    
+    // API functions
+    async function updateQuantity(itemId, action) {
+        showLoading();
+        
+        try {
+            const response = await fetch(`{{ store.url('cart.update') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    action: action
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                updateCartDisplay(data.cart);
+                updateHeaderCartCount(data.cart.items_count);
+            } else {
+                showNotification(data.message || '{{ "Failed to update cart"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Update quantity error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function removeItem(itemId) {
+        showLoading();
+        
+        try {
+            const response = await fetch(`{{ store.url('cart.remove') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    item_id: itemId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                updateCartDisplay(data.cart);
+                updateHeaderCartCount(data.cart.items_count);
+                showNotification('{{ "Item removed from cart"|t }}', 'success');
+            } else {
+                showNotification(data.message || '{{ "Failed to remove item"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Remove item error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function calculateShippingCost(country, postal) {
+        showLoading();
+        
+        try {
+            const response = await fetch(`{{ store.url('cart.shipping') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    country: country,
+                    postal_code: postal
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                updateCartDisplay(data.cart);
+                document.querySelector('[data-shipping-cost]').textContent = data.shipping_cost || 'Free';
+            } else {
+                showNotification(data.message || '{{ "Failed to calculate shipping"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Calculate shipping error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function applyPromoCode(code) {
+        showLoading();
+        
+        try {
+            const response = await fetch(`{{ store.url('cart.promo') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    promo_code: code
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                updateCartDisplay(data.cart);
+                showNotification('{{ "Promo code applied"|t }}', 'success');
+                document.querySelector('[data-promo-input]').value = '';
+            } else {
+                showNotification(data.message || '{{ "Invalid promo code"|t }}', 'error');
+            }
+        } catch (error) {
+            console.error('Apply promo error:', error);
+            showNotification('{{ "An error occurred"|t }}', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function removePromoCode() {
+        showLoading();
+        
+        try {
+            const response = await fetch(`{{ store.url('cart.promo.remove') }}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                updateCartDisplay(data.cart);
+                showNotification('{{ "Promo code removed"|t }}', 'success');
+            }
+        } catch (error) {
+            console.error('Remove promo error:', error);
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function updateCartDisplay(cart) {
+        // Update quantities and totals
+        Object.entries(cart.items).forEach(([itemId, item]) => {
+            const quantityDisplay = document.querySelector(`[data-quantity="${itemId}"]`);
+            const itemTotal = document.querySelector(`[data-item-total="${itemId}"]`);
+            
+            if (quantityDisplay) quantityDisplay.textContent = item.quantity;
+            if (itemTotal) itemTotal.textContent = item.total;
+        });
+        
+        // Update summary
+        const subtotal = document.querySelector('[data-subtotal]');
+        const discount = document.querySelector('[data-discount]');
+        const shipping = document.querySelector('[data-shipping]');
+        const tax = document.querySelector('[data-tax]');
+        const total = document.querySelector('[data-total]');
+        const cartCount = document.querySelector('[data-cart-count]');
+        
+        if (subtotal) subtotal.textContent = cart.subtotal;
+        if (discount) discount.textContent = cart.discount_amount ? `-${cart.discount_amount}` : '';
+        if (shipping) shipping.textContent = cart.shipping_cost || 'Free';
+        if (tax) tax.textContent = cart.tax_amount || '';
+        if (total) total.textContent = cart.total;
+        if (cartCount) cartCount.textContent = cart.items_count;
+        
+        // Show/hide empty state
+        const emptyCart = document.querySelector('[data-empty-cart]');
+        const cartItems = document.querySelector('[data-cart-items]');
+        const cartSummary = document.querySelector('[data-cart-summary]');
+        
+        if (cart.items_count === 0) {
+            emptyCart.classList.remove('hidden');
+            cartItems.classList.add('hidden');
+            cartSummary.classList.add('hidden');
+        } else {
+            emptyCart.classList.add('hidden');
+            cartItems.classList.remove('hidden');
+            cartSummary.classList.remove('hidden');
+        }
+    }
+    
+    function updateHeaderCartCount(count) {
+        const headerCartCount = document.querySelector('.header-actions .badge');
+        if (headerCartCount) {
+            headerCartCount.textContent = count;
+            headerCartCount.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Use SweetAlert2 or custom notification system
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: '{{ store.direction == "rtl" ? "top-left" : "top-right" }}',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else {
+            alert(message);
+        }
+    }
+});
+</script>

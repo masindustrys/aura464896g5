@@ -1,245 +1,463 @@
-<header class="header header--{{ theme.header_style|default('modern') }}">
-    <!-- Top Bar -->
-    <div class="header__top-bar">
-        <div class="container">
-            <div class="top-bar">
-                <div class="top-bar__left">
-                    <!-- Language & Currency -->
-                    <div class="header__utilities">
-                        {% if store.languages|length > 1 %}
-                        <div class="language-selector">
-                            <button class="language-selector__toggle">
-                                <span>{{ store.current_language.name }}</span>
-                                <i class="icon-chevron-down"></i>
-                            </button>
-                            <ul class="language-selector__list">
-                                {% for language in store.languages %}
-                                <li>
-                                    <a href="{{ language.url }}" class="{% if language.code == store.current_language.code %}active{% endif %}">
-                                        {{ language.name }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
-                        
-                        {% if store.currencies|length > 1 %}
-                        <div class="currency-selector">
-                            <button class="currency-selector__toggle">
-                                <span>{{ store.current_currency.code }}</span>
-                                <i class="icon-chevron-down"></i>
-                            </button>
-                            <ul class="currency-selector__list">
-                                {% for currency in store.currencies %}
-                                <li>
-                                    <a href="{{ currency.url }}" class="{% if currency.code == store.current_currency.code %}active{% endif %}">
-                                        {{ currency.name }} ({{ currency.symbol }})
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="top-bar__right">
-                    <!-- Contact Info -->
-                    <div class="contact-info">
-                        {% if store.phone %}
-                        <a href="tel:{{ store.phone }}" class="contact-info__item">
-                            <i class="icon-phone"></i>
-                            <span>{{ store.phone }}</span>
-                        </a>
-                        {% endif %}
-                        
-                        {% if store.email %}
-                        <a href="mailto:{{ store.email }}" class="contact-info__item">
-                            <i class="icon-email"></i>
-                            <span>{{ store.email }}</span>
-                        </a>
-                        {% endif %}
-                    </div>
+{#
+  Enhanced Modern Header Component
+  Features: Sticky navigation, mega menu, search, multi-currency, account dropdown
+#}
+
+<header class="site-header fixed top-0 left-0 right-0 z-50 transition-all duration-300 
+               {{ theme_settings.header_is_sticky ? 'sticky-header' : '' }}"
+        data-component="header">
+        
+    <!-- Top Navigation Bar -->
+    {% if theme_settings.important_links %}
+    <div class="top-nav {{ theme_settings.topnav_is_dark ? 'bg-secondary-900 text-white' : 'bg-secondary-100 text-secondary-800' }} py-2 text-sm border-b border-secondary-200">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <!-- Left Side - Welcome Message -->
+                <div class="flex items-center space-x-4">
+                    <span class="hidden md:inline">
+                        {{ trans('common.welcome_message')|default('Welcome to our store!') }}
+                    </span>
                     
-                    <!-- Social Links -->
-                    {% if store.social_links %}
-                    <div class="social-links">
-                        {% for social in store.social_links %}
-                        <a href="{{ social.url }}" target="_blank" rel="noopener" class="social-links__item">
-                            <i class="icon-{{ social.platform }}"></i>
-                        </a>
-                        {% endfor %}
-                    </div>
+                    <!-- Contact Info -->
+                    {% if store.phone %}
+                    <a href="tel:{{ store.phone }}" 
+                       class="flex items-center space-x-1 hover:text-primary-600 transition-colors">
+                        <i class="sicon-phone text-xs"></i>
+                        <span class="hidden lg:inline">{{ store.phone }}</span>
+                    </a>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Main Header -->
-    <div class="header__main">
-        <div class="container">
-            <div class="header__content">
-                <!-- Mobile Menu Toggle -->
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
                 
-                <!-- Logo -->
-                <div class="header__logo">
-                    <a href="{{ store.url }}" class="logo">
-                        {% if theme.logo %}
-                        <img src="{{ theme.logo }}" alt="{{ store.name }}" class="logo__image">
-                        {% else %}
-                        <span class="logo__text">{{ store.name }}</span>
-                        {% endif %}
-                    </a>
-                </div>
-                
-                <!-- Search Bar -->
-                <div class="header__search">
-                    <form class="search-form" action="{{ url('search') }}" method="get">
-                        <div class="search-input-group">
-                            <input type="text" name="q" placeholder="{{ 'Search for products...'|t }}" class="search-input" value="{{ request.q }}">
-                            <button type="submit" class="search-button">
-                                <i class="icon-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Header Actions -->
-                <div class="header__actions">
-                    <!-- User Account -->
-                    <div class="header-action">
-                        <a href="{{ user.is_guest ? url('login') : url('account') }}" class="header-action__link">
-                            <i class="icon-user"></i>
-                            <span class="header-action__text">
-                                {{ user.is_guest ? 'Login'|t : user.name }}
-                            </span>
-                        </a>
-                    </div>
-                    
-                    <!-- Wishlist -->
-                    <div class="header-action">
-                        <a href="{{ url('wishlist') }}" class="header-action__link">
-                            <i class="icon-heart"></i>
-                            <span class="header-action__count">{{ wishlist.items_count }}</span>
-                            <span class="header-action__text">{{ 'Wishlist'|t }}</span>
-                        </a>
-                    </div>
-                    
-                    <!-- Compare -->
-                    <div class="header-action">
-                        <a href="{{ url('compare') }}" class="header-action__link">
-                            <i class="icon-compare"></i>
-                            <span class="header-action__count">{{ compare.items_count }}</span>
-                            <span class="header-action__text">{{ 'Compare'|t }}</span>
-                        </a>
-                    </div>
-                    
-                    <!-- Cart -->
-                    <div class="header-action header-action--cart">
-                        <button class="header-action__link" id="cartToggle">
-                            <i class="icon-cart"></i>
-                            <span class="header-action__count">{{ cart.items_count }}</span>
-                            <span class="header-action__text">{{ 'Cart'|t }}</span>
-                            <span class="header-action__total">{{ cart.total }}</span>
+                <!-- Right Side - Links & Utilities -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    {% if store.languages|length > 1 %}
+                    <div class="language-selector relative group">
+                        <button class="flex items-center space-x-1 py-1 hover:text-primary-600 transition-colors"
+                                data-dropdown-toggle="language-dropdown">
+                            <i class="sicon-world text-sm"></i>
+                            <span class="text-xs">{{ store.current_language.name }}</span>
+                            <i class="sicon-keyboard_arrow_down text-xs"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Navigation -->
-    <nav class="header__nav">
-        <div class="container">
-            <ul class="main-nav">
-                {% for category in store.main_categories %}
-                <li class="main-nav__item {% if category.children %}has-children{% endif %}">
-                    <a href="{{ category.url }}" class="main-nav__link">
-                        {{ category.name }}
-                        {% if category.children %}
-                        <i class="icon-chevron-down"></i>
-                        {% endif %}
-                    </a>
-                    
-                    {% if category.children %}
-                    <div class="mega-menu">
-                        <div class="mega-menu__content">
-                            {% for child_category in category.children %}
-                            <div class="mega-menu__column">
-                                <h4 class="mega-menu__title">
-                                    <a href="{{ child_category.url }}">{{ child_category.name }}</a>
-                                </h4>
-                                {% if child_category.children %}
-                                <ul class="mega-menu__list">
-                                    {% for sub_category in child_category.children %}
-                                    <li>
-                                        <a href="{{ sub_category.url }}">{{ sub_category.name }}</a>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </div>
+                        <div class="dropdown-menu absolute top-full right-0 mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-2 min-w-32 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
+                             id="language-dropdown">
+                            {% for language in store.languages %}
+                            <a href="{{ language.url }}" 
+                               class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors {{ language.code == store.current_language.code ? 'text-primary-600 font-medium' : '' }}">
+                                {{ language.name }}
+                            </a>
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
+                    
+                    <!-- Currency Selector -->
+                    {% if store.currencies|length > 1 %}
+                    <div class="currency-selector relative group">
+                        <button class="flex items-center space-x-1 py-1 hover:text-primary-600 transition-colors"
+                                data-dropdown-toggle="currency-dropdown">
+                            <i class="sicon-dollar-sign text-sm"></i>
+                            <span class="text-xs">{{ store.current_currency.code }}</span>
+                            <i class="sicon-keyboard_arrow_down text-xs"></i>
+                        </button>
+                        <div class="dropdown-menu absolute top-full right-0 mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-2 min-w-32 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
+                             id="currency-dropdown">
+                            {% for currency in store.currencies %}
+                            <a href="{{ currency.url }}" 
+                               class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors {{ currency.code == store.current_currency.code ? 'text-primary-600 font-medium' : '' }}">
+                                {{ currency.name }} ({{ currency.symbol }})
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Social Links -->
+                    {% if store.social_links %}
+                    <div class="social-links hidden lg:flex items-center space-x-2">
+                        {% for social in store.social_links|slice(0, 3) %}
+                        <a href="{{ social.url }}" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="w-6 h-6 flex items-center justify-center text-xs hover:text-primary-600 transition-colors"
+                           aria-label="{{ social.platform }}">
+                            <i class="sicon-{{ social.platform }}"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Quick Links -->
+                    <div class="quick-links flex items-center space-x-3 text-xs">
+                        <a href="{{ store.url('pages.about') }}" 
+                           class="hover:text-primary-600 transition-colors hidden md:inline">
+                            {{ trans('pages.about') }}
+                        </a>
+                        <a href="{{ store.url('pages.contact') }}" 
+                           class="hover:text-primary-600 transition-colors hidden md:inline">
+                            {{ trans('pages.contact') }}
+                        </a>
+                        <a href="{{ store.url('blog.index') }}" 
+                           class="hover:text-primary-600 transition-colors hidden sm:inline">
+                            {{ trans('pages.blog') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Main Header -->
+    <div class="main-header py-4 border-b border-secondary-200">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle lg:hidden p-2 text-secondary-600 hover:text-primary-600 hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                        id="mobileMenuToggle"
+                        aria-label="{{ trans('common.menu') }}">
+                    <span class="hamburger-line block w-6 h-0.5 bg-current transition-all duration-200"></span>
+                    <span class="hamburger-line block w-6 h-0.5 bg-current mt-1.5 transition-all duration-200"></span>
+                    <span class="hamburger-line block w-6 h-0.5 bg-current mt-1.5 transition-all duration-200"></span>
+                </button>
+                
+                <!-- Logo -->
+                <div class="logo flex-shrink-0">
+                    <a href="{{ store.url }}" class="flex items-center space-x-3" aria-label="{{ store.name }}">
+                        {% if store.logo %}
+                        <img src="{{ store.logo }}" 
+                             alt="{{ store.name }}"
+                             class="h-8 lg:h-10 w-auto object-contain">
+                        {% else %}
+                        <span class="text-xl lg:text-2xl font-bold text-secondary-900">
+                            {{ store.name }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </div>
+                
+                <!-- Search Bar (Desktop) -->
+                <div class="search-container hidden lg:block flex-1 max-w-2xl mx-8">
+                    {% include 'components/search/header-search.twig' %}
+                </div>
+                
+                <!-- Header Actions -->
+                <div class="header-actions flex items-center space-x-4">
+                    <!-- Search Toggle (Mobile) -->
+                    <button class="search-toggle lg:hidden p-2 text-secondary-600 hover:text-primary-600 hover:bg-secondary-100 rounded-lg transition-all duration-200"
+                            id="searchToggle"
+                            aria-label="{{ trans('common.search') }}">
+                        <i class="sicon-search text-xl"></i>
+                    </button>
+                    
+                    <!-- User Account -->
+                    <div class="account-menu relative group">
+                        <button class="action-btn flex flex-col items-center space-y-1 py-2 px-3 hover:text-primary-600 transition-colors"
+                                data-dropdown-toggle="account-dropdown"
+                                aria-label="{{ user.is_guest ? trans('auth.login') : trans('account.my_account') }}">
+                            <i class="sicon-user text-xl"></i>
+                            <span class="text-xs hidden sm:block">
+                                {{ user.is_guest ? trans('auth.login') : user.first_name|default(trans('account.account')) }}
+                            </span>
+                        </button>
+                        
+                        <!-- Account Dropdown -->
+                        <div class="dropdown-menu absolute top-full right-0 mt-2 bg-white border border-secondary-200 rounded-xl shadow-lg py-3 min-w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+                             id="account-dropdown">
+                            {% if user.is_guest %}
+                                <a href="{{ store.url('auth.login') }}" 
+                                   class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors">
+                                    <i class="sicon-login mr-2"></i>
+                                    {{ trans('auth.login') }}
+                                </a>
+                                <a href="{{ store.url('auth.register') }}" 
+                                   class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors">
+                                    <i class="sicon-user-plus mr-2"></i>
+                                    {{ trans('auth.register') }}
+                                </a>
+                            {% else %}
+                                <div class="px-4 py-2 border-b border-secondary-100 mb-2">
+                                    <div class="text-sm font-medium text-secondary-900">{{ user.name }}</div>
+                                    <div class="text-xs text-secondary-500">{{ user.email }}</div>
+                                </div>
+                                <a href="{{ store.url('customer.dashboard') }}" 
+                                   class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors">
+                                    <i class="sicon-user mr-2"></i>
+                                    {{ trans('account.dashboard') }}
+                                </a>
+                                <a href="{{ store.url('customer.orders') }}" 
+                                   class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors">
+                                    <i class="sicon-receipt mr-2"></i>
+                                    {{ trans('account.orders') }}
+                                </a>
+                                <a href="{{ store.url('customer.addresses') }}" 
+                                   class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors">
+                                    <i class="sicon-map-pin mr-2"></i>
+                                    {{ trans('account.addresses') }}
+                                </a>
+                                <a href="{{ store.url('customer.profile') }}" 
+                                   class="block px-4 py-2 text-sm hover:bg-secondary-50 hover:text-primary-600 transition-colors">
+                                    <i class="sicon-settings mr-2"></i>
+                                    {{ trans('account.profile') }}
+                                </a>
+                                <hr class="my-2">
+                                <a href="{{ store.url('auth.logout') }}" 
+                                   class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <i class="sicon-logout mr-2"></i>
+                                    {{ trans('auth.logout') }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Wishlist -->
+                    <a href="{{ store.url('customer.wishlist') }}" 
+                       class="action-btn relative flex flex-col items-center space-y-1 py-2 px-3 hover:text-primary-600 transition-colors"
+                       aria-label="{{ trans('wishlist.wishlist') }}">
+                        <div class="relative">
+                            <i class="sicon-heart text-xl"></i>
+                            {% if wishlist.items_count > 0 %}
+                            <span class="badge absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                                {{ wishlist.items_count }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <span class="text-xs hidden sm:block">{{ trans('wishlist.wishlist') }}</span>
+                    </a>
+                    
+                    <!-- Compare -->
+                    <a href="{{ store.url('product.compare') }}" 
+                       class="action-btn relative flex flex-col items-center space-y-1 py-2 px-3 hover:text-primary-600 transition-colors"
+                       aria-label="{{ trans('product.compare') }}">
+                        <div class="relative">
+                            <i class="sicon-shuffle text-xl"></i>
+                            {% if compare.items_count > 0 %}
+                            <span class="badge absolute -top-2 -right-2 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                                {{ compare.items_count }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <span class="text-xs hidden sm:block">{{ trans('product.compare') }}</span>
+                    </a>
+                    
+                    <!-- Shopping Cart -->
+                    <button class="cart-toggle action-btn relative flex flex-col items-center space-y-1 py-2 px-3 hover:text-primary-600 transition-colors"
+                            id="cartToggle"
+                            aria-label="{{ trans('cart.cart') }}">
+                        <div class="relative">
+                            <i class="sicon-cart text-xl"></i>
+                            {% if cart.items_count > 0 %}
+                            <span class="badge absolute -top-2 -right-2 bg-primary-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium animate-pulse">
+                                {{ cart.items_count }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="hidden sm:block text-center">
+                            <div class="text-xs">{{ trans('cart.cart') }}</div>
+                            {% if cart.total %}
+                            <div class="text-xs font-medium text-primary-600">
+                                {{ cart.total|money }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Menu -->
+    <nav class="main-navigation bg-white border-b border-secondary-200">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-3">
+                <!-- Main Categories Menu -->
+                <ul class="main-nav hidden lg:flex items-center space-x-8">
+                    {% for category in store.main_categories %}
+                    <li class="nav-item relative group">
+                        <a href="{{ category.url }}" 
+                           class="nav-link flex items-center space-x-1 py-2 text-sm font-medium text-secondary-700 hover:text-primary-600 transition-colors {{ category.is_active ? 'text-primary-600' : '' }}">
+                            {% if category.icon %}
+                            <i class="{{ category.icon }} text-lg"></i>
+                            {% endif %}
+                            <span>{{ category.name }}</span>
+                            {% if category.children %}
+                            <i class="sicon-keyboard_arrow_down text-xs"></i>
+                            {% endif %}
+                        </a>
+                        
+                        <!-- Mega Menu -->
+                        {% if category.children %}
+                        <div class="mega-menu absolute top-full left-0 mt-1 bg-white border border-secondary-200 rounded-xl shadow-lg p-6 w-screen max-w-4xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-40">
+                            <div class="grid grid-cols-4 gap-6">
+                                {% for child_category in category.children|slice(0, 16) %}
+                                <div class="mega-menu-column">
+                                    <h4 class="font-semibold text-secondary-900 mb-3">
+                                        <a href="{{ child_category.url }}" class="hover:text-primary-600 transition-colors">
+                                            {{ child_category.name }}
+                                        </a>
+                                    </h4>
+                                    {% if child_category.children %}
+                                    <ul class="space-y-2">
+                                        {% for sub_category in child_category.children|slice(0, 6) %}
+                                        <li>
+                                            <a href="{{ sub_category.url }}" 
+                                               class="text-sm text-secondary-600 hover:text-primary-600 transition-colors">
+                                                {{ sub_category.name }}
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Featured Products in Menu -->
+                            {% if category.featured_products %}
+                            <div class="border-t border-secondary-200 mt-6 pt-6">
+                                <h4 class="font-semibold text-secondary-900 mb-4">{{ trans('common.featured_products') }}</h4>
+                                <div class="grid grid-cols-4 gap-4">
+                                    {% for product in category.featured_products|slice(0, 4) %}
+                                    <a href="{{ product.url }}" class="group">
+                                        <img src="{{ product.image }}" 
+                                             alt="{{ product.name }}"
+                                             class="w-full h-20 object-cover rounded-lg mb-2 group-hover:scale-105 transition-transform">
+                                        <div class="text-xs text-secondary-600 group-hover:text-primary-600 transition-colors">
+                                            {{ product.name|truncate(30) }}
+                                        </div>
+                                        <div class="text-xs font-medium text-primary-600">
+                                            {{ product.price|money }}
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                
+                <!-- Secondary Navigation -->
+                <div class="secondary-nav hidden lg:flex items-center space-x-6 text-sm">
+                    {% if store.deals %}
+                    <a href="{{ store.url('offers.index') }}" 
+                       class="flex items-center space-x-1 text-red-600 hover:text-red-700 font-medium transition-colors">
+                        <i class="sicon-fire text-lg"></i>
+                        <span>{{ trans('offers.deals') }}</span>
+                    </a>
+                    {% endif %}
+                    
+                    {% if store.new_arrivals %}
+                    <a href="{{ store.url('products.new') }}" 
+                       class="flex items-center space-x-1 text-green-600 hover:text-green-700 font-medium transition-colors">
+                        <i class="sicon-star text-lg"></i>
+                        <span>{{ trans('products.new_arrivals') }}</span>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ store.url('brands.index') }}" 
+                       class="text-secondary-700 hover:text-primary-600 transition-colors">
+                        {{ trans('brands.brands') }}
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
     
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu__header">
-            <div class="mobile-menu__logo">
-                {% if theme.logo %}
-                <img src="{{ theme.logo }}" alt="{{ store.name }}">
-                {% else %}
-                <span>{{ store.name }}</span>
-                {% endif %}
+    <!-- Mobile Search Bar -->
+    <div class="mobile-search-bar lg:hidden bg-white border-b border-secondary-200 p-4 hidden" id="mobileSearchBar">
+        {% include 'components/search/mobile-search.twig' %}
+    </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden" id="mobileMenuOverlay"></div>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu fixed top-0 left-0 w-80 h-full bg-white z-50 transform -translate-x-full transition-transform duration-300" id="mobileMenu">
+    <div class="mobile-menu-header flex items-center justify-between p-4 border-b border-secondary-200">
+        <div class="flex items-center space-x-3">
+            {% if store.logo %}
+            <img src="{{ store.logo }}" alt="{{ store.name }}" class="h-8 w-auto">
+            {% else %}
+            <span class="text-lg font-bold">{{ store.name }}</span>
+            {% endif %}
+        </div>
+        <button class="mobile-menu-close p-2 text-secondary-600 hover:text-secondary-900 transition-colors" id="mobileMenuClose">
+            <i class="sicon-close text-xl"></i>
+        </button>
+    </div>
+    
+    <div class="mobile-menu-content flex-1 overflow-y-auto">
+        <!-- User Account Section -->
+        <div class="user-section p-4 border-b border-secondary-200">
+            {% if user.is_guest %}
+            <div class="space-y-3">
+                <a href="{{ store.url('auth.login') }}" 
+                   class="block w-full text-center py-2 px-4 bg-primary-600 text-white rounded-lg font-medium">
+                    {{ trans('auth.login') }}
+                </a>
+                <a href="{{ store.url('auth.register') }}" 
+                   class="block w-full text-center py-2 px-4 border border-secondary-300 text-secondary-700 rounded-lg">
+                    {{ trans('auth.register') }}
+                </a>
             </div>
-            <button class="mobile-menu__close" id="mobileMenuClose">
-                <i class="icon-close"></i>
-            </button>
+            {% else %}
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <i class="sicon-user text-primary-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="font-medium text-secondary-900">{{ user.name }}</div>
+                    <div class="text-sm text-secondary-500">{{ user.email }}</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <a href="{{ store.url('customer.dashboard') }}" 
+                   class="flex items-center space-x-2 p-2 text-secondary-700 hover:text-primary-600 transition-colors">
+                    <i class="sicon-user"></i>
+                    <span>{{ trans('account.dashboard') }}</span>
+                </a>
+                <a href="{{ store.url('customer.orders') }}" 
+                   class="flex items-center space-x-2 p-2 text-secondary-700 hover:text-primary-600 transition-colors">
+                    <i class="sicon-receipt"></i>
+                    <span>{{ trans('account.orders') }}</span>
+                </a>
+            </div>
+            {% endif %}
         </div>
         
-        <div class="mobile-menu__content">
-            <!-- Mobile Search -->
-            <div class="mobile-menu__search">
-                <form action="{{ url('search') }}" method="get">
-                    <div class="search-input-group">
-                        <input type="text" name="q" placeholder="{{ 'Search...'|t }}">
-                        <button type="submit">
-                            <i class="icon-search"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Mobile Navigation -->
-            <ul class="mobile-nav">
+        <!-- Navigation Menu -->
+        <nav class="mobile-nav p-4">
+            <ul class="space-y-1">
                 {% for category in store.main_categories %}
-                <li class="mobile-nav__item {% if category.children %}has-children{% endif %}">
-                    <a href="{{ category.url }}" class="mobile-nav__link">
-                        {{ category.name }}
+                <li class="nav-item">
+                    <div class="flex items-center justify-between">
+                        <a href="{{ category.url }}" 
+                           class="flex-1 flex items-center space-x-3 py-3 text-secondary-800 hover:text-primary-600 font-medium transition-colors">
+                            {% if category.icon %}
+                            <i class="{{ category.icon }} text-lg"></i>
+                            {% endif %}
+                            <span>{{ category.name }}</span>
+                        </a>
                         {% if category.children %}
-                        <i class="icon-chevron-right"></i>
+                        <button class="submenu-toggle p-2 text-secondary-600 hover:text-primary-600 transition-colors"
+                                data-toggle="submenu-{{ category.id }}">
+                            <i class="sicon-keyboard_arrow_down transform transition-transform"></i>
+                        </button>
                         {% endif %}
-                    </a>
+                    </div>
                     
                     {% if category.children %}
-                    <ul class="mobile-nav__submenu">
+                    <ul class="submenu pl-6 space-y-1 hidden" id="submenu-{{ category.id }}">
                         {% for child_category in category.children %}
                         <li>
-                            <a href="{{ child_category.url }}">{{ child_category.name }}</a>
+                            <a href="{{ child_category.url }}" 
+                               class="block py-2 text-sm text-secondary-600 hover:text-primary-600 transition-colors">
+                                {{ child_category.name }}
+                            </a>
                         </li>
                         {% endfor %}
                     </ul>
@@ -247,29 +465,150 @@
                 </li>
                 {% endfor %}
             </ul>
-            
-            <!-- Mobile Account Links -->
-            <div class="mobile-menu__account">
-                {% if user.is_guest %}
-                <a href="{{ url('login') }}" class="mobile-menu__account-link">
-                    <i class="icon-login"></i>
-                    {{ 'Login'|t }}
+        </nav>
+        
+        <!-- Quick Links -->
+        <div class="quick-links p-4 border-t border-secondary-200">
+            <h4 class="font-medium text-secondary-900 mb-3">{{ trans('common.quick_links') }}</h4>
+            <div class="space-y-2 text-sm">
+                <a href="{{ store.url('offers.index') }}" class="flex items-center space-x-2 py-2 text-red-600">
+                    <i class="sicon-fire"></i>
+                    <span>{{ trans('offers.deals') }}</span>
                 </a>
-                <a href="{{ url('register') }}" class="mobile-menu__account-link">
-                    <i class="icon-user-plus"></i>
-                    {{ 'Register'|t }}
+                <a href="{{ store.url('products.new') }}" class="flex items-center space-x-2 py-2 text-green-600">
+                    <i class="sicon-star"></i>
+                    <span>{{ trans('products.new_arrivals') }}</span>
                 </a>
-                {% else %}
-                <a href="{{ url('account') }}" class="mobile-menu__account-link">
-                    <i class="icon-user"></i>
-                    {{ 'My Account'|t }}
+                <a href="{{ store.url('brands.index') }}" class="flex items-center space-x-2 py-2 text-secondary-700">
+                    <i class="sicon-bookmark"></i>
+                    <span>{{ trans('brands.brands') }}</span>
                 </a>
-                <a href="{{ url('logout') }}" class="mobile-menu__account-link">
-                    <i class="icon-logout"></i>
-                    {{ 'Logout'|t }}
+                <a href="{{ store.url('blog.index') }}" class="flex items-center space-x-2 py-2 text-secondary-700">
+                    <i class="sicon-newspaper"></i>
+                    <span>{{ trans('pages.blog') }}</span>
                 </a>
-                {% endif %}
             </div>
         </div>
     </div>
-</header>
+</div>
+
+<script>
+// Enhanced Header JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const header = document.querySelector('[data-component="header"]');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+    const searchToggle = document.getElementById('searchToggle');
+    const mobileSearchBar = document.getElementById('mobileSearchBar');
+    
+    // Sticky header functionality
+    let lastScrollTop = 0;
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (header) {
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                header.classList.add('header-hidden');
+            } else {
+                // Scrolling up
+                header.classList.remove('header-hidden');
+            }
+            
+            // Add background on scroll
+            if (scrollTop > 50) {
+                header.classList.add('header-scrolled');
+            } else {
+                header.classList.remove('header-scrolled');
+            }
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+    
+    // Mobile menu functionality
+    function openMobileMenu() {
+        mobileMenu.classList.remove('-translate-x-full');
+        mobileMenuOverlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeMobileMenu() {
+        mobileMenu.classList.add('-translate-x-full');
+        mobileMenuOverlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', openMobileMenu);
+    }
+    
+    if (mobileMenuClose) {
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+    
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+    
+    // Mobile search toggle
+    if (searchToggle && mobileSearchBar) {
+        searchToggle.addEventListener('click', () => {
+            mobileSearchBar.classList.toggle('hidden');
+            if (!mobileSearchBar.classList.contains('hidden')) {
+                const searchInput = mobileSearchBar.querySelector('input');
+                if (searchInput) searchInput.focus();
+            }
+        });
+    }
+    
+    // Submenu toggles
+    document.querySelectorAll('.submenu-toggle').forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = toggle.dataset.toggle;
+            const submenu = document.getElementById(targetId);
+            const arrow = toggle.querySelector('i');
+            
+            if (submenu) {
+                submenu.classList.toggle('hidden');
+                arrow.classList.toggle('rotate-180');
+            }
+        });
+    });
+    
+    // Dropdown functionality
+    document.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => {
+        const targetId = toggle.dataset.dropdownToggle;
+        const dropdown = document.getElementById(targetId);
+        
+        if (dropdown) {
+            let timeout;
+            
+            // Show dropdown on hover/focus
+            toggle.addEventListener('mouseenter', () => {
+                clearTimeout(timeout);
+                dropdown.classList.remove('opacity-0', 'invisible');
+                dropdown.classList.add('opacity-100', 'visible');
+            });
+            
+            dropdown.addEventListener('mouseenter', () => {
+                clearTimeout(timeout);
+            });
+            
+            // Hide dropdown
+            const hideDropdown = () => {
+                timeout = setTimeout(() => {
+                    dropdown.classList.add('opacity-0', 'invisible');
+                    dropdown.classList.remove('opacity-100', 'visible');
+                }, 200);
+            };
+            
+            toggle.addEventListener('mouseleave', hideDropdown);
+            dropdown.addEventListener('mouseleave', hideDropdown);
+        }
+    });
+});
+</script>

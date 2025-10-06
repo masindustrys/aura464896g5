@@ -1,0 +1,331 @@
+{#
+  Enhanced Product Card Component
+  Modern, feature-rich product card with advanced e-commerce functionality
+#}
+
+<div class="product-card group relative bg-white rounded-xl border border-secondary-200 overflow-hidden hover:shadow-medium transition-all duration-300" 
+     data-product-id="{{ product.id }}" 
+     data-product-type="{{ product.type }}"
+     data-animation="zoom-in">
+     
+    <!-- Product Image Container -->
+    <div class="product-image relative overflow-hidden aspect-square">
+        <!-- Main Product Link -->
+        <a href="{{ product.url }}" class="absolute inset-0 z-10" aria-label="{{ 'View product'|t }} {{ product.name }}">
+            <!-- Primary Image -->
+            <img src="{{ product.image|default(asset('images/product-placeholder.jpg')) }}" 
+                 alt="{{ product.name }}"
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                 loading="lazy"
+                 width="300"
+                 height="300">
+            
+            <!-- Hover Image (Secondary) -->
+            {% if product.images|length > 1 %}
+            <img src="{{ product.images[1] }}" 
+                 alt="{{ product.name }}"
+                 class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                 loading="lazy">
+            {% endif %}
+        </a>
+        
+        <!-- Product Badges -->
+        <div class="product-badges absolute top-3 left-3 flex flex-col space-y-2 z-20">
+            {% if product.is_new %}
+            <span class="badge bg-green-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ 'New'|t }}
+            </span>
+            {% endif %}
+            
+            {% if product.is_on_sale %}
+            <span class="badge bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {% if product.discount_percentage %}
+                    -{{ product.discount_percentage }}%
+                {% else %}
+                    {{ 'Sale'|t }}
+                {% endif %}
+            </span>
+            {% endif %}
+            
+            {% if product.is_featured %}
+            <span class="badge bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ 'Featured'|t }}
+            </span>
+            {% endif %}
+            
+            {% if product.is_limited %}
+            <span class="badge bg-purple-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ 'Limited'|t }}
+            </span>
+            {% endif %}
+            
+            {% if product.is_out_of_stock %}
+            <span class="badge bg-gray-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {{ 'Out of Stock'|t }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="product-actions absolute top-3 right-3 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 z-20">
+            <!-- Quick View -->
+            <button class="action-btn quick-view-btn w-10 h-10 bg-white/90 backdrop-blur-sm text-secondary-600 hover:text-primary-600 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110" 
+                    data-product-id="{{ product.id }}" 
+                    data-tooltip="{{ 'Quick View'|t }}"
+                    aria-label="{{ 'Quick view'|t }} {{ product.name }}">
+                <i class="sicon-eye text-lg"></i>
+            </button>
+            
+            <!-- Wishlist -->
+            <button class="action-btn wishlist-btn w-10 h-10 bg-white/90 backdrop-blur-sm text-secondary-600 hover:text-red-500 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 {{ product.is_in_wishlist ? 'active text-red-500' : '' }}" 
+                    data-product-id="{{ product.id }}"
+                    data-tooltip="{{ product.is_in_wishlist ? 'Remove from Wishlist'|t : 'Add to Wishlist'|t }}"
+                    aria-label="{{ product.is_in_wishlist ? 'Remove from wishlist'|t : 'Add to wishlist'|t }}">
+                <i class="sicon-heart{{ product.is_in_wishlist ? '-solid' : '' }} text-lg"></i>
+            </button>
+            
+            <!-- Compare -->
+            <button class="action-btn compare-btn w-10 h-10 bg-white/90 backdrop-blur-sm text-secondary-600 hover:text-blue-500 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 {{ product.is_in_compare ? 'active text-blue-500' : '' }}" 
+                    data-product-id="{{ product.id }}"
+                    data-tooltip="{{ product.is_in_compare ? 'Remove from Compare'|t : 'Add to Compare'|t }}"
+                    aria-label="{{ product.is_in_compare ? 'Remove from compare'|t : 'Add to compare'|t }}">
+                <i class="sicon-shuffle text-lg"></i>
+            </button>
+            
+            <!-- Share -->
+            <button class="action-btn share-btn w-10 h-10 bg-white/90 backdrop-blur-sm text-secondary-600 hover:text-green-500 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110" 
+                    data-product-url="{{ product.url }}"
+                    data-product-name="{{ product.name }}"
+                    data-tooltip="{{ 'Share Product'|t }}"
+                    aria-label="{{ 'Share product'|t }}">
+                <i class="sicon-share text-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Stock Status Indicator -->
+        {% if product.stock_quantity is defined and product.stock_quantity <= 5 and product.stock_quantity > 0 %}
+        <div class="stock-indicator absolute bottom-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium z-20">
+            {{ 'Only %s left'|t|format(product.stock_quantity) }}
+        </div>
+        {% endif %}
+        
+        <!-- Quick Add to Cart (appears on hover for simple products) -->
+        {% if product.type == 'simple' and not product.is_out_of_stock %}
+        <div class="quick-add-to-cart absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-20">
+            <button class="btn btn-primary w-full py-2 text-sm font-medium rounded-lg flex items-center justify-center space-x-2 add-to-cart-btn" 
+                    data-product-id="{{ product.id }}"
+                    aria-label="{{ 'Add to cart'|t }} {{ product.name }}">
+                <i class="sicon-cart text-lg"></i>
+                <span>{{ 'Add to Cart'|t }}</span>
+            </button>
+        </div>
+        {% endif %}
+        
+        <!-- Image Gallery Dots (for products with multiple images) -->
+        {% if product.images|length > 2 %}
+        <div class="image-gallery-dots absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {% for image in product.images|slice(0, 4) %}
+            <button class="w-2 h-2 rounded-full bg-white/60 hover:bg-white transition-colors {{ loop.first ? 'bg-white' : '' }}"
+                    data-image="{{ image }}"
+                    aria-label="{{ 'View image'|t }} {{ loop.index }}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Product Content -->
+    <div class="product-content p-4">
+        <!-- Product Category & Brand -->
+        <div class="product-meta flex items-center justify-between mb-2">
+            {% if product.category %}
+            <a href="{{ product.category.url }}" 
+               class="product-category text-xs text-secondary-500 hover:text-primary-600 transition-colors uppercase tracking-wide font-medium">
+                {{ product.category.name }}
+            </a>
+            {% endif %}
+            
+            {% if product.brand %}
+            <span class="product-brand text-xs text-secondary-400 font-medium">
+                {{ product.brand.name }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- Product Title -->
+        <h3 class="product-title font-semibold text-secondary-900 mb-2 line-clamp-2 leading-tight">
+            <a href="{{ product.url }}" class="hover:text-primary-600 transition-colors">
+                {{ product.name }}
+            </a>
+        </h3>
+        
+        <!-- Product Rating & Reviews -->
+        {% if product.reviews_count > 0 %}
+        <div class="product-rating flex items-center space-x-2 mb-3">
+            <div class="stars flex items-center space-x-1">
+                {% for i in 1..5 %}
+                <i class="w-4 h-4 {{ i <= product.rating ? 'text-yellow-400 sicon-star-filled' : 'text-secondary-300 sicon-star' }}"></i>
+                {% endfor %}
+            </div>
+            <span class="rating-count text-sm text-secondary-500">
+                ({{ product.reviews_count }})
+            </span>
+        </div>
+        {% endif %}
+        
+        <!-- Product Price -->
+        <div class="product-price flex items-center space-x-2 mb-3">
+            {% if product.is_on_sale %}
+                <span class="current-price text-lg font-bold text-secondary-900">
+                    {{ product.sale_price|money }}
+                </span>
+                <span class="original-price text-sm text-secondary-500 line-through">
+                    {{ product.regular_price|money }}
+                </span>
+                {% if product.discount_percentage %}
+                <span class="discount text-sm text-red-500 font-medium">
+                    (-{{ product.discount_percentage }}%)
+                </span>
+                {% endif %}
+            {% else %}
+                <span class="current-price text-lg font-bold text-secondary-900">
+                    {{ product.price|money }}
+                </span>
+            {% endif %}
+        </div>
+        
+        <!-- Product Variants Preview -->
+        {% if product.type == 'variable' %}
+        <div class="product-variants mb-3">
+            <!-- Color Variants -->
+            {% if product.color_variants|length > 1 %}
+            <div class="variant-colors flex items-center space-x-1 mb-2">
+                <span class="text-xs text-secondary-500 mr-2">{{ 'Colors'|t }}:</span>
+                {% for color in product.color_variants|slice(0, 5) %}
+                <div class="color-swatch w-6 h-6 rounded-full border-2 border-gray-200 overflow-hidden cursor-pointer hover:scale-110 transition-transform"
+                     style="background-color: {{ color.hex_value|default('#' ~ color.value) }}"
+                     title="{{ color.name }}"
+                     data-color="{{ color.value }}">
+                </div>
+                {% endfor %}
+                {% if product.color_variants|length > 5 %}
+                <span class="text-xs text-secondary-500">+{{ product.color_variants|length - 5 }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Size Variants -->
+            {% if product.size_variants|length > 1 %}
+            <div class="variant-sizes flex items-center space-x-1">
+                <span class="text-xs text-secondary-500 mr-2">{{ 'Sizes'|t }}:</span>
+                {% for size in product.size_variants|slice(0, 4) %}
+                <span class="size-chip text-xs px-2 py-1 bg-secondary-100 text-secondary-700 rounded cursor-pointer hover:bg-primary-100 hover:text-primary-700 transition-colors"
+                      data-size="{{ size.value }}">
+                    {{ size.name }}
+                </span>
+                {% endfor %}
+                {% if product.size_variants|length > 4 %}
+                <span class="text-xs text-secondary-500">+{{ product.size_variants|length - 4 }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Product Features/Highlights -->
+        {% if product.features or product.tags %}
+        <div class="product-features mb-3">
+            {% if product.features %}
+                {% for feature in product.features|slice(0, 2) %}
+                <span class="feature-tag inline-block text-xs bg-primary-50 text-primary-700 px-2 py-1 rounded-md mr-1 mb-1">
+                    {{ feature }}
+                </span>
+                {% endfor %}
+            {% endif %}
+            
+            {% if product.tags %}
+                {% for tag in product.tags|slice(0, 1) %}
+                <span class="tag inline-block text-xs bg-secondary-100 text-secondary-600 px-2 py-1 rounded-md mr-1 mb-1">
+                    #{{ tag.name }}
+                </span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Shipping Info -->
+        {% if product.free_shipping %}
+        <div class="shipping-info flex items-center text-green-600 text-xs mb-3">
+            <i class="sicon-truck mr-1"></i>
+            <span>{{ 'Free Shipping'|t }}</span>
+        </div>
+        {% endif %}
+        
+        <!-- Product Actions -->
+        <div class="product-actions flex space-x-2">
+            {% if product.type == 'variable' or product.is_out_of_stock %}
+                <!-- View Options Button for variable products or out of stock -->
+                <a href="{{ product.url }}" 
+                   class="btn btn-outline flex-1 py-2 text-sm font-medium rounded-lg text-center">
+                    {% if product.is_out_of_stock %}
+                        {{ 'View Details'|t }}
+                    {% else %}
+                        {{ 'Select Options'|t }}
+                    {% endif %}
+                </a>
+            {% else %}
+                <!-- Add to Cart for simple products -->
+                <button class="btn btn-primary flex-1 py-2 text-sm font-medium rounded-lg add-to-cart-btn" 
+                        data-product-id="{{ product.id }}"
+                        {{ product.is_out_of_stock ? 'disabled' : '' }}>
+                    <i class="sicon-cart mr-1"></i>
+                    {{ product.is_out_of_stock ? 'Out of Stock'|t : 'Add to Cart'|t }}
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Loading State Overlay -->
+    <div class="product-loading absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 transition-opacity duration-200 z-30" style="display: none;">
+        <div class="spinner w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+    </div>
+    
+    <!-- Recently Viewed Badge (if applicable) -->
+    {% if product.recently_viewed %}
+    <div class="recently-viewed-badge absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full z-10">
+        {{ 'Recently Viewed'|t }}
+    </div>
+    {% endif %}
+</div>
+
+{# Schema.org Product Markup for SEO #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name|e('js') }}",
+  "image": "{{ product.image }}",
+  "description": "{{ product.description|striptags|e('js') }}",
+  "brand": {
+    "@type": "Brand",
+    "name": "{{ product.brand.name|default(store.name)|e('js') }}"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ product.url }}",
+    "priceCurrency": "{{ store.currency }}",
+    "price": "{{ product.price_amount }}",
+    "availability": "{{ product.is_out_of_stock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock' }}",
+    "seller": {
+      "@type": "Organization",
+      "name": "{{ store.name|e('js') }}"
+    }
+  }
+  {% if product.reviews_count > 0 %},
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ product.rating }}",
+    "reviewCount": "{{ product.reviews_count }}"
+  }
+  {% endif %}
+}
+</script>

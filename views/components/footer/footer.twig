@@ -1,0 +1,298 @@
+{#
+Modern Footer Component
+Comprehensive footer with all necessary sections and modern design
+#}
+
+<footer class="site-footer {{ theme_settings.footer_is_dark ? 'bg-secondary-900 text-white' : 'bg-secondary-100 text-secondary-800' }}">
+    
+    <!-- Main Footer Content -->
+    <div class="footer-content">
+        <div class="container mx-auto px-4 py-16">
+            <div class="footer-sections grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                
+                <!-- Store Information -->
+                <div class="footer-section">
+                    <!-- Logo -->
+                    <div class="mb-6">
+                        {% if store.logo %}
+                        <img src="{{ store.logo }}" 
+                             alt="{{ store.name }}"
+                             class="h-12 w-auto {{ theme_settings.footer_is_dark ? 'filter brightness-0 invert' : '' }}">
+                        {% else %}
+                        <h3 class="text-2xl font-bold {{ theme_settings.footer_is_dark ? 'text-white' : 'text-secondary-900' }}">
+                            {{ store.name }}
+                        </h3>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-300' : 'text-secondary-600' }} mb-6 leading-relaxed">
+                        {{ store.description|default('Your trusted online shopping destination with quality products and exceptional service.') }}
+                    </p>
+                    
+                    <!-- Contact Information -->
+                    <div class="space-y-3">
+                        {% if store.phone %}
+                        <div class="flex items-center space-x-3">
+                            <i class="sicon-phone {{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }}"></i>
+                            <a href="tel:{{ store.phone }}" 
+                               class="text-sm hover:{{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }} transition-colors">
+                                {{ store.phone }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if store.email %}
+                        <div class="flex items-center space-x-3">
+                            <i class="sicon-envelope {{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }}"></i>
+                            <a href="mailto:{{ store.email }}" 
+                               class="text-sm hover:{{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }} transition-colors">
+                                {{ store.email }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if store.address %}
+                        <div class="flex items-start space-x-3">
+                            <i class="sicon-location {{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }} mt-1"></i>
+                            <span class="text-sm">{{ store.address }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="footer-section">
+                    <h4 class="section-title font-semibold text-lg mb-6 {{ theme_settings.footer_is_dark ? 'text-white' : 'text-secondary-900' }}">
+                        {{ trans('footer.quick_links') }}
+                    </h4>
+                    <div class="section-links space-y-3">
+                        <a href="{{ store.url }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.home') }}
+                        </a>
+                        <a href="{{ store.url('products.index') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.products') }}
+                        </a>
+                        <a href="{{ store.url('categories.index') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.categories') }}
+                        </a>
+                        <a href="{{ store.url('brands.index') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.brands') }}
+                        </a>
+                        {% if store.blog_enabled %}
+                        <a href="{{ store.url('blog.index') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.blog') }}
+                        </a>
+                        {% endif %}
+                        <a href="{{ store.url('pages.about') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.about') }}
+                        </a>
+                        <a href="{{ store.url('pages.contact') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.contact') }}
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="footer-section">
+                    <h4 class="section-title font-semibold text-lg mb-6 {{ theme_settings.footer_is_dark ? 'text-white' : 'text-secondary-900' }}">
+                        {{ trans('footer.customer_service') }}
+                    </h4>
+                    <div class="section-links space-y-3">
+                        <a href="{{ store.url('customer.profile') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.account') }}
+                        </a>
+                        <a href="{{ store.url('customer.orders') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('account.orders') }}
+                        </a>
+                        <a href="{{ store.url('customer.wishlist') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.wishlist') }}
+                        </a>
+                        <a href="{{ store.url('pages.shipping') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('footer.shipping_info') }}
+                        </a>
+                        <a href="{{ store.url('pages.returns') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('footer.return_policy') }}
+                        </a>
+                        <a href="{{ store.url('pages.size-guide') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('footer.size_guide') }}
+                        </a>
+                        <a href="{{ store.url('pages.faq') }}" 
+                           class="footer-link block {{ theme_settings.footer_is_dark ? 'text-secondary-300 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                                  transition-colors duration-200">
+                            {{ trans('common.faq') }}
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Newsletter & Social -->
+                <div class="footer-section">
+                    <h4 class="section-title font-semibold text-lg mb-6 {{ theme_settings.footer_is_dark ? 'text-white' : 'text-secondary-900' }}">
+                        {{ trans('footer.newsletter_title') }}
+                    </h4>
+                    
+                    <p class="text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-300' : 'text-secondary-600' }} mb-6">
+                        {{ trans('footer.newsletter_description') }}
+                    </p>
+                    
+                    <!-- Newsletter Form -->
+                    <form class="newsletter-form mb-8" action="{{ store.url('newsletter.subscribe') }}" method="post">
+                        <div class="flex flex-col space-y-3">
+                            <input type="email" 
+                                   name="email" 
+                                   placeholder="{{ trans('footer.newsletter_placeholder') }}" 
+                                   required
+                                   class="px-4 py-3 rounded-lg border {{ theme_settings.footer_is_dark ? 'border-secondary-700 bg-secondary-800 text-white placeholder-secondary-400' : 'border-secondary-300 bg-white text-secondary-900' }} 
+                                          focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <button type="submit" 
+                                    class="btn btn-primary py-3 font-medium transition-all duration-200 hover:scale-105">
+                                {{ trans('footer.newsletter_button') }}
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Social Media Links -->
+                    {% if store.social_links %}
+                    <div class="social-media">
+                        <h5 class="font-medium mb-4 {{ theme_settings.footer_is_dark ? 'text-white' : 'text-secondary-900' }}">
+                            {{ trans('footer.social_media') }}
+                        </h5>
+                        <div class="social-links flex space-x-4">
+                            {% for social in store.social_links %}
+                            <a href="{{ social.url }}" 
+                               class="social-link w-10 h-10 {{ theme_settings.footer_is_dark ? 'bg-secondary-800 hover:bg-primary-600' : 'bg-secondary-200 hover:bg-primary-600' }} 
+                                      text-{{ theme_settings.footer_is_dark ? 'white' : 'secondary-600' }} hover:text-white rounded-full 
+                                      flex items-center justify-center transition-all duration-200 hover:scale-110"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               aria-label="{{ social.name }}">
+                                <i class="sicon-{{ social.icon }}"></i>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer Bottom -->
+    <div class="footer-bottom border-t {{ theme_settings.footer_is_dark ? 'border-secondary-800' : 'border-secondary-300' }}">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                
+                <!-- Copyright -->
+                <div class="copyright text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-400' : 'text-secondary-600' }}">
+                    {{ trans('footer.copyright') }} 
+                    <a href="{{ store.url }}" 
+                       class="hover:{{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }} transition-colors">
+                        {{ store.name }}
+                    </a>
+                    {{ trans('footer.powered_by') }} 
+                    <a href="https://salla.sa" 
+                       class="hover:{{ theme_settings.footer_is_dark ? 'text-primary-400' : 'text-primary-600' }} transition-colors"
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                        Salla
+                    </a>
+                </div>
+                
+                <!-- Payment Methods & Security -->
+                <div class="flex items-center space-x-6">
+                    <!-- Payment Methods -->
+                    {% if store.payment_methods %}
+                    <div class="payment-methods flex items-center space-x-2">
+                        <span class="text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-400' : 'text-secondary-600' }}">
+                            {{ trans('footer.we_accept') }}:
+                        </span>
+                        {% for payment in store.payment_methods %}
+                        <img src="{{ payment.icon }}" 
+                             alt="{{ payment.name }}"
+                             class="h-6 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Security Badges -->
+                    <div class="security-badges flex items-center space-x-4 text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-400' : 'text-secondary-600' }}">
+                        <div class="flex items-center space-x-1">
+                            <i class="sicon-shield-check text-green-500"></i>
+                            <span>{{ trans('footer.ssl_secured') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Footer Links -->
+            <div class="additional-links mt-6 pt-6 border-t {{ theme_settings.footer_is_dark ? 'border-secondary-800' : 'border-secondary-300' }}">
+                <div class="flex flex-wrap items-center justify-center space-x-6 text-sm">
+                    <a href="{{ store.url('pages.privacy') }}" 
+                       class="{{ theme_settings.footer_is_dark ? 'text-secondary-400 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                              transition-colors duration-200">
+                        {{ trans('footer.privacy_policy') }}
+                    </a>
+                    <a href="{{ store.url('pages.terms') }}" 
+                       class="{{ theme_settings.footer_is_dark ? 'text-secondary-400 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                              transition-colors duration-200">
+                        {{ trans('footer.terms_conditions') }}
+                    </a>
+                    <a href="{{ store.url('sitemap') }}" 
+                       class="{{ theme_settings.footer_is_dark ? 'text-secondary-400 hover:text-white' : 'text-secondary-600 hover:text-secondary-900' }} 
+                              transition-colors duration-200">
+                        Sitemap
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Trust Indicators Strip -->
+<div class="trust-indicators {{ theme_settings.footer_is_dark ? 'bg-secondary-800' : 'bg-white border-t border-secondary-200' }} py-4">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-wrap items-center justify-center space-x-8 text-center">
+            <div class="trust-item flex items-center space-x-2 text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-300' : 'text-secondary-600' }}">
+                <i class="sicon-truck text-green-500"></i>
+                <span>{{ trans('footer.fast_shipping') }}</span>
+            </div>
+            <div class="trust-item flex items-center space-x-2 text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-300' : 'text-secondary-600' }}">
+                <i class="sicon-refresh text-blue-500"></i>
+                <span>{{ trans('footer.money_back') }}</span>
+            </div>
+            <div class="trust-item flex items-center space-x-2 text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-300' : 'text-secondary-600' }}">
+                <i class="sicon-headset text-purple-500"></i>
+                <span>{{ trans('footer.customer_support') }}</span>
+            </div>
+            <div class="trust-item flex items-center space-x-2 text-sm {{ theme_settings.footer_is_dark ? 'text-secondary-300' : 'text-secondary-600' }}">
+                <i class="sicon-shield-check text-orange-500"></i>
+                <span>{{ trans('footer.ssl_secured') }}</span>
+            </div>
+        </div>
+    </div>
+</div>
